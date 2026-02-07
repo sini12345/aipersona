@@ -11,10 +11,10 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     
@@ -28,7 +28,7 @@ jobs:
         pyinstaller --onefile --noconsole --name Ali-Trainer ali_hybrid.py
     
     - name: Upload Windows artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ali-windows
         path: dist/Ali-Trainer.exe
@@ -36,10 +36,10 @@ jobs:
   build-mac:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     
@@ -53,7 +53,7 @@ jobs:
         pyinstaller --onefile --windowed --name Ali-Trainer ali_hybrid.py
     
     - name: Upload macOS artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ali-macos
         path: dist/Ali-Trainer.app
