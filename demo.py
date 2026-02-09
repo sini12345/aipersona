@@ -1,6 +1,6 @@
 """
 Interaktiv CLI-demo: Persona Træningsplatform
-Til social- og specialpædagogisk uddannelse
+Med teori-valg til social- og specialpædagogisk uddannelse
 """
 
 from persona_engine import PersonaEngine
@@ -35,6 +35,32 @@ def select_persona() -> str:
         print("Ugyldigt valg. Prøv igen.")
 
 
+def select_theory() -> str | None:
+    """Lader brugeren vælge en teori (valgfri)."""
+    theories = PersonaEngine.list_theories()
+
+    print()
+    print("-" * 65)
+    print("Vælg teoretisk ramme (feedbacken evaluerer dig ud fra teorien):\n")
+    print(f"  0. Ingen teori (kun persona-feedback)")
+    for i, t in enumerate(theories, 1):
+        print(f"  {i}. {t['name']} ({t['authors']})")
+        print(f"     {t['summary'][:80]}...")
+        print()
+
+    while True:
+        choice = input(f"Vælg teori (0-{len(theories)}): ").strip()
+        try:
+            idx = int(choice)
+            if idx == 0:
+                return None
+            if 1 <= idx <= len(theories):
+                return theories[idx - 1]["id"]
+        except ValueError:
+            pass
+        print("Ugyldigt valg. Prøv igen.")
+
+
 def select_model() -> tuple[str, bool]:
     """Lader brugeren vælge model og thinking."""
     print("\nVælg AI-model:")
@@ -55,10 +81,12 @@ def select_model() -> tuple[str, bool]:
 def run_session():
     """Kører en fuld træningssession."""
     persona_id = select_persona()
+    theory_id = select_theory()
     model, thinking = select_model()
 
     engine = PersonaEngine(
         persona_id=persona_id,
+        theory_id=theory_id,
         model=model,
         extended_thinking=thinking,
     )
@@ -70,13 +98,15 @@ def run_session():
     print("=" * 65)
     print(f"  SAMTALE MED {persona['name'].upper()}")
     print(f"  {persona['context']}")
+    if engine.theory:
+        print(f"  Teori: {engine.theory['name']}")
     print(f"  Model: {model.upper()} | Thinking: {'TIL' if thinking else 'FRA'}")
     print("=" * 65)
     print()
     print(f"  Sted: {scenario['setting']}")
     print(f"  {scenario['intro']}")
     print()
-    print("  Kommandoer: 'slut' = afslut | 'stats' = statistik")
+    print("  Kommandoer: 'slut' = afslut | 'stats' = statistik | 'teori' = vis teori")
     print("-" * 65)
     print()
 
@@ -95,6 +125,14 @@ def run_session():
             print(f"\n  Interaktioner: {n}")
             print(f"  Tokens: {cost['total_tokens']:,}")
             print(f"  Pris: ~{cost['cost_dkk']} DKK\n")
+            continue
+
+        if student_input.lower() == "teori":
+            summary = engine.get_theory_summary()
+            if summary:
+                print(f"\n  {summary}\n")
+            else:
+                print("\n  Ingen teori valgt.\n")
             continue
 
         if thinking:
@@ -137,7 +175,10 @@ def run_session():
     # Feedback
     print()
     print("=" * 65)
-    print("  FEEDBACK PÅ DIN KOMMUNIKATION")
+    header = "  FEEDBACK PÅ DIN KOMMUNIKATION"
+    if engine.theory:
+        header += f" ({engine.theory['name'].upper()})"
+    print(header)
     print("=" * 65)
     print()
     print("  Analyserer din samtale...\n")

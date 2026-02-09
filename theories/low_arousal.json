@@ -1,0 +1,40 @@
+{
+  "id": "low_arousal",
+  "name": "Low Arousal / Rogivende pædagogik",
+  "authors": "Bo Hejlskov Elvén, Andrew McDonnell",
+  "summary": "Low arousal-tilgangen handler om at reducere stress og konfliktniveau i mødet med borgere. Grundprincippet er at mennesker der kan opføre sig ordentligt, gør det - og at udfordrende adfærd skyldes krav der overstiger borgerens aktuelle ressourcer. Pædagogens opgave er at tage ansvar for at dæmpe situationen.",
+  "key_concepts": [
+    {
+      "name": "Affektsmitte",
+      "definition": "Følelser smitter. Hvis pædagogen er stresset eller vred, eskalerer borgeren. Pædagogen skal derfor regulere egne følelser først"
+    },
+    {
+      "name": "Ansvar for konflikter",
+      "definition": "Den der har mest magt (pædagogen) har ansvaret for at konflikter ikke opstår eller eskalerer. Man kan ikke forvente at borgeren tager ansvar for noget de ikke har ressourcer til"
+    },
+    {
+      "name": "Krav-ressource-model",
+      "definition": "Udfordrende adfærd opstår når kravene overstiger borgerens aktuelle ressourcer. Løsningen er at sænke kravene eller øge ressourcerne - ikke at straffe adfærden"
+    },
+    {
+      "name": "Kontrol vs. selvkontrol",
+      "definition": "Ydre kontrol (regler, konsekvenser, magt) undergraver borgerens selvkontrol. Målet er at styrke selvkontrol gennem tryghed og forudsigelighed"
+    },
+    {
+      "name": "Rogivende strategier",
+      "definition": "Sænk stemmen, giv plads, reducer krav, tilbyd pause, brug distrahering, undgå øjenkontakt ved eskalering, undlad at konfrontere"
+    },
+    {
+      "name": "Bagklog analyse",
+      "definition": "Analyser konflikter bagefter: hvad triggerede det? Hvilke krav var for høje? Hvad kan vi gøre anderledes næste gang? Fokus på systemer, ikke individet"
+    }
+  ],
+  "evaluation_focus": [
+    "Holder den studerende sit eget arousalniveau lavt? Smitter de ro eller stress?",
+    "Sænker den studerende kravene når borgeren viser tegn på overbelastning?",
+    "Undgår den studerende magtkampe og konfrontationer?",
+    "Tager den studerende ansvar for situationen i stedet for at placere ansvar hos borgeren?",
+    "Bruger den studerende rogivende strategier (sænke stemme, give plads, tilbyde pause)?",
+    "Undlader den studerende at straffe, true eller bruge konsekvenser?"
+  ]
+}

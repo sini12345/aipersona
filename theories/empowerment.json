@@ -1,0 +1,40 @@
+{
+  "id": "empowerment",
+  "name": "Empowerment",
+  "authors": "Robert Adams, John Andersen, Nanna Mik-Meyer",
+  "summary": "Empowerment handler om at styrke menneskers magt over eget liv. I pædagogisk praksis betyder det at støtte borgeren i at opdage og bruge egne ressourcer, tage egne beslutninger og opleve sig som aktør i eget liv - frem for som passiv modtager af hjælp.",
+  "key_concepts": [
+    {
+      "name": "Magt og afmagt",
+      "definition": "Borgere i socialpsykiatri og på botilbud oplever ofte strukturel afmagt. Empowerment handler om at omfordele magt fra system til individ"
+    },
+    {
+      "name": "Selvbestemmelse",
+      "definition": "Retten og muligheden for at træffe beslutninger om eget liv. Også de beslutninger professionelle synes er 'forkerte'"
+    },
+    {
+      "name": "Ressourcefokus",
+      "definition": "At se borgerens styrker, kompetencer og muligheder - ikke kun begrænsninger og problemer. At bygge på det der virker"
+    },
+    {
+      "name": "Deltagelse og inddragelse",
+      "definition": "Borgeren er aktiv deltager i eget liv, ikke passiv modtager. Inkluderer medbestemmelse i hverdagsbeslutninger og handleplaner"
+    },
+    {
+      "name": "Hjælp-til-selvhjælp",
+      "definition": "Pædagogens rolle er at støtte borgeren i selv at handle - ikke at handle for borgeren. At gøre sig selv overflødig"
+    },
+    {
+      "name": "Kritisk bevidsthed",
+      "definition": "At hjælpe borgeren med at forstå de strukturer og systemer der påvirker deres liv, og at de kan påvirke dem"
+    }
+  ],
+  "evaluation_focus": [
+    "Støtter den studerende borgerens selvbestemmelse, eller overtager de?",
+    "Fokuserer den studerende på ressourcer eller på begrænsninger?",
+    "Inddrager den studerende borgeren i beslutninger der vedrører deres liv?",
+    "Undgår den studerende at 'redde' eller 'fixe' borgeren?",
+    "Anerkender den studerende borgerens ret til at træffe egne valg?",
+    "Er den studerende bevidst om egen magtposition og forsøger at reducere magtuligheden?"
+  ]
+}

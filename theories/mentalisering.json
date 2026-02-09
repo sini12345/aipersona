@@ -1,0 +1,44 @@
+{
+  "id": "mentalisering",
+  "name": "Mentalisering",
+  "authors": "Peter Fonagy, Jon G. Allen, Anthony Bateman",
+  "summary": "Mentalisering er evnen til at forstå adfærd i lyset af bagvedliggende mentale tilstande - tanker, følelser, ønsker, behov. I pædagogisk praksis handler det om at se bag om adfærden og forstå hvad der driver den, både hos borgeren og hos en selv.",
+  "key_concepts": [
+    {
+      "name": "Mentalisering",
+      "definition": "At forstå egen og andres adfærd som udtryk for indre mentale tilstande (tanker, følelser, intentioner)"
+    },
+    {
+      "name": "Mentaliseringssvigt",
+      "definition": "Når evnen til at mentalisere bryder sammen - typisk under stress, konflikt eller stærke følelser. Man reagerer på adfærden i stedet for det der ligger bag"
+    },
+    {
+      "name": "Præ-mentaliserende tilstande",
+      "definition": "Teleologisk tænkning (kun handlinger tæller), psykisk ækvivalens (mine tanker = virkelighed), eller pretend mode (følelser afkobles fra virkelighed)"
+    },
+    {
+      "name": "Affektregulering",
+      "definition": "Evnen til at regulere egne følelser. Forudsætning for at kunne mentalisere. Udvikles i trygge relationer"
+    },
+    {
+      "name": "Markeret spejling",
+      "definition": "At spejle den andens følelser på en markeret måde - vise at man forstår følelsen uden at overtage den"
+    },
+    {
+      "name": "Nysgerrighed over vished",
+      "definition": "At bevare en nysgerrig, undersøgende holdning fremfor at konkludere og vide hvad den anden tænker/føler"
+    },
+    {
+      "name": "Selv-mentalisering",
+      "definition": "At være opmærksom på egne mentale tilstande og hvordan de påvirker ens professionelle praksis"
+    }
+  ],
+  "evaluation_focus": [
+    "Forsøger den studerende at forstå hvad der ligger BAG borgerens adfærd?",
+    "Bevarer den studerende en nysgerrig holdning, eller konkluderer de for hurtigt?",
+    "Kan den studerende regulere egne følelser i samtalen (selv-mentalisering)?",
+    "Bruger den studerende markeret spejling - viser forståelse uden at overtage?",
+    "Reagerer den studerende på adfærd eller på de bagvedliggende følelser?",
+    "Opstår der mentaliseringssvigt hos den studerende under pres?"
+  ]
+}

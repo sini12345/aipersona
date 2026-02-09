@@ -1,21 +1,22 @@
 """
 PersonaEngine - Generisk AI Persona Træningsplatform
-Understøtter multiple personaer til social- og specialpædagogisk træning
+Understøtter multiple personaer og teori-baseret feedback
+til social- og specialpædagogisk træning
 """
 
 import anthropic
 import os
 import json
-import glob
 from datetime import datetime
 from typing import Optional, Literal
 from pathlib import Path
 
 
 class PersonaEngine:
-    """Generisk persona-engine der kan indlæse og køre enhver persona-definition."""
+    """Generisk persona-engine med persona- og teori-valg."""
 
     PERSONAS_DIR = Path(__file__).parent / "personas"
+    THEORIES_DIR = Path(__file__).parent / "theories"
 
     MODELS = {
         "opus": "claude-opus-4-5-20251101",
@@ -25,6 +26,8 @@ class PersonaEngine:
     def __init__(
         self,
         persona_id: str,
+        theory_id: Optional[str] = None,
+        custom_theory_text: Optional[str] = None,
         api_key: Optional[str] = None,
         model: Literal["opus", "sonnet"] = "sonnet",
         extended_thinking: bool = True,
@@ -40,10 +43,22 @@ class PersonaEngine:
         self.persona = self._load_persona(persona_id)
         self.persona_id = persona_id
 
+        # Load theory (optional)
+        self.theory = None
+        self.theory_id = theory_id
+        if theory_id:
+            self.theory = self._load_theory(theory_id)
+
+        # Custom uploaded text (optional, supplements or replaces theory)
+        self.custom_theory_text = custom_theory_text
+
         self.conversation_history = []
         self.session_stats = {
             "persona": persona_id,
             "persona_name": self.persona["name"],
+            "theory": theory_id,
+            "theory_name": self.theory["name"] if self.theory else None,
+            "has_custom_text": custom_theory_text is not None,
             "model": model,
             "extended_thinking": extended_thinking,
             "total_tokens": 0,
@@ -59,6 +74,18 @@ class PersonaEngine:
             ids = [p["id"] for p in available]
             raise FileNotFoundError(
                 f"Persona '{persona_id}' ikke fundet. Tilgængelige: {ids}"
+            )
+        with open(filepath, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def _load_theory(self, theory_id: str) -> dict:
+        """Indlæser teori-definition fra JSON-fil."""
+        filepath = self.THEORIES_DIR / f"{theory_id}.json"
+        if not filepath.exists():
+            available = self.list_theories()
+            ids = [t["id"] for t in available]
+            raise FileNotFoundError(
+                f"Teori '{theory_id}' ikke fundet. Tilgængelige: {ids}"
             )
         with open(filepath, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -80,9 +107,39 @@ class PersonaEngine:
                 })
         return personas
 
+    @classmethod
+    def list_theories(cls) -> list[dict]:
+        """Returnerer liste af tilgængelige teorier med metadata."""
+        theories = []
+        for filepath in sorted(cls.THEORIES_DIR.glob("*.json")):
+            with open(filepath, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                theories.append({
+                    "id": data["id"],
+                    "name": data["name"],
+                    "authors": data["authors"],
+                    "summary": data["summary"],
+                })
+        return theories
+
     def get_scenario(self) -> dict:
         """Returnerer scenariet for denne persona."""
         return self.persona["scenario"]
+
+    def get_theory_summary(self) -> Optional[str]:
+        """Returnerer en læsbar opsummering af valgt teori."""
+        if not self.theory:
+            return None
+
+        concepts = "\n".join(
+            f"  - {c['name']}: {c['definition']}"
+            for c in self.theory["key_concepts"]
+        )
+        return (
+            f"{self.theory['name']} ({self.theory['authors']})\n\n"
+            f"{self.theory['summary']}\n\n"
+            f"Kernebegreber:\n{concepts}"
+        )
 
     def chat(self, student_message: str, thinking_budget: int = 10000) -> dict:
         """
@@ -177,6 +234,7 @@ class PersonaEngine:
                 "metadata": {
                     "model": self.model_name,
                     "persona": self.persona_id,
+                    "theory": self.theory_id,
                     "extended_thinking": self.extended_thinking,
                     "tokens": response.usage.model_dump(),
                     "interaction_number": len(self.session_stats["interactions"]),
@@ -190,42 +248,102 @@ class PersonaEngine:
                 "thinking": None,
             }
 
-    def analyze_student(self) -> str:
-        """Analyserer den studerendes kommunikation baseret på persona-specifikke kriterier."""
-        if not self.session_stats["interactions"]:
-            return "Ingen interaktioner endnu."
+    def _build_analysis_prompt(self) -> str:
+        """Bygger analyse-prompt baseret på persona, teori og evt. uploadet tekst."""
+        conversation_json = json.dumps(
+            self.session_stats["interactions"], ensure_ascii=False, indent=2
+        )
 
-        criteria_text = "\n".join(
+        # Base: persona-kriterier
+        persona_criteria = "\n".join(
             f"- {c['name']}: {c['description']}"
             for c in self.persona["evaluation_criteria"]
         )
 
-        analysis_prompt = f"""Du er en erfaren underviser i social- og specialpædagogik.
+        # Teori-sektion
+        theory_section = ""
+        if self.theory:
+            concepts = "\n".join(
+                f"  - {c['name']}: {c['definition']}"
+                for c in self.theory["key_concepts"]
+            )
+            eval_focus = "\n".join(
+                f"  - {f}" for f in self.theory["evaluation_focus"]
+            )
+            theory_section = f"""
+
+TEORETISK RAMME: {self.theory['name']} ({self.theory['authors']})
+{self.theory['summary']}
+
+Kernebegreber:
+{concepts}
+
+Evalueringsfokus ud fra teorien:
+{eval_focus}
+"""
+
+        # Uploadet tekst
+        custom_section = ""
+        if self.custom_theory_text:
+            custom_section = f"""
+
+UPLOADET PENSUM-TEKST (brug som yderligere evalueringsgrundlag):
+---
+{self.custom_theory_text}
+---
+"""
+
+        # Feedback-struktur afhænger af om teori er valgt
+        if self.theory:
+            feedback_structure = f"""Giv:
+1. En kort overordnet vurdering (2-3 sætninger)
+
+2. PERSONA-FEEDBACK - Evaluer ud fra disse kriterier:
+{persona_criteria}
+   For hvert kriterie: en score (1-5) og konkret feedback med eksempler fra samtalen
+
+3. TEORI-FEEDBACK ({self.theory['name']}) - Evaluer den studerendes brug af teoriens begreber:
+   - Hvilke begreber fra {self.theory['name']} var tydelige i den studerendes tilgang?
+   - Hvilke begreber manglede eller blev misforstået?
+   - Giv en samlet teori-score (1-5)
+   - Konkrete eksempler fra samtalen koblet til teoriens begreber
+
+4. Et konkret forbedringsforslag med reference til teorien"""
+        else:
+            feedback_structure = f"""Giv:
+1. En kort overordnet vurdering (2-3 sætninger)
+2. For hvert kriterie: en score (1-5) og konkret feedback med eksempler fra samtalen:
+{persona_criteria}
+3. Et konkret forbedringsforslag til næste gang"""
+
+        return f"""Du er en erfaren underviser i social- og specialpædagogik.
 
 En studerende har netop haft en træningssamtale med en simuleret borger/bruger:
 - Persona: {self.persona['name']}, {self.persona['age']} år
 - Kontekst: {self.persona['context']}
 - Baggrund: {self.persona['background_short']}
-
+{theory_section}{custom_section}
 Samtalen:
-{json.dumps(self.session_stats['interactions'], ensure_ascii=False, indent=2)}
+{conversation_json}
 
-Evaluer den studerendes kommunikation ud fra disse kriterier:
-{criteria_text}
-
-Giv:
-1. En kort overordnet vurdering (2-3 sætninger)
-2. For hvert kriterie: en score (1-5) og konkret feedback med eksempler fra samtalen
-3. Et konkret forbedringsforslag til næste gang
+{feedback_structure}
 
 Vær konstruktiv, specifik og pædagogisk i din feedback. Brug eksempler fra samtalen.
 Skriv på dansk."""
 
+    def analyze_student(self) -> str:
+        """Analyserer den studerendes kommunikation baseret på persona + teori."""
+        if not self.session_stats["interactions"]:
+            return "Ingen interaktioner endnu."
+
         try:
             response = self.client.messages.create(
                 model=self.current_model,
-                max_tokens=4000,
-                messages=[{"role": "user", "content": analysis_prompt}],
+                max_tokens=6000,
+                messages=[{
+                    "role": "user",
+                    "content": self._build_analysis_prompt(),
+                }],
             )
             return response.content[0].text
         except Exception as e:
@@ -264,7 +382,8 @@ Skriv på dansk."""
         """Gemmer session til JSON-fil."""
         if filename is None:
             ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"session_{self.persona_id}_{self.model_name}_{ts}.json"
+            theory_part = f"_{self.theory_id}" if self.theory_id else ""
+            filename = f"session_{self.persona_id}{theory_part}_{self.model_name}_{ts}.json"
 
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(

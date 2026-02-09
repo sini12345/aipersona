@@ -1,0 +1,44 @@
+{
+  "id": "anerkendelse",
+  "name": "Anerkendelse",
+  "authors": "Axel Honneth, Anne-Lise Løvlie Schibbye, Berit Bae",
+  "summary": "Anerkendelse handler om at møde den anden som et selvstændigt subjekt med egne oplevelser, følelser og perspektiver. Det er ikke det samme som ros eller at give ret - det er at se, høre og bekræfte den andens oplevelsesverden som gyldig.",
+  "key_concepts": [
+    {
+      "name": "Anerkendelse som grundholdning",
+      "definition": "En måde at møde den anden på, der bekræfter deres oplevelse som gyldig - uanset om man er enig. Modsat vurdering og bedømmelse"
+    },
+    {
+      "name": "Honneths tre sfærer",
+      "definition": "Kærlighed/omsorg (privatsfæren, at blive set som unik), rettigheder (at blive respekteret som ligeværdig), solidaritet (at blive værdsat for sit bidrag til fællesskabet)"
+    },
+    {
+      "name": "Krænkelse",
+      "definition": "Manglende anerkendelse. Kan være overgreb/svigt (kærlighedssfæren), rettighedstab (retssfæren), eller nedværdigelse (solidaritetssfæren)"
+    },
+    {
+      "name": "Subjekt-subjekt relation",
+      "definition": "At møde den anden som et ligeværdigt subjekt med eget indre liv, ikke som et objekt der skal fikses, vurderes eller opdragEes"
+    },
+    {
+      "name": "Lytning og indlevelse",
+      "definition": "At lytte for at forstå, ikke for at svare. At forsøge at se verden fra den andens perspektiv"
+    },
+    {
+      "name": "Selvrefleksion",
+      "definition": "At være bevidst om egne forforståelser, fordomme og reaktioner i mødet med den anden"
+    },
+    {
+      "name": "Anerkendelse vs. ros",
+      "definition": "Anerkendelse er ikke ros eller at give ret. Det er at bekræfte den andens oplevelse som gyldig, også når man er uenig"
+    }
+  ],
+  "evaluation_focus": [
+    "Møder den studerende borgeren som subjekt eller objekt?",
+    "Bekræfter den studerende borgerens oplevelse som gyldig?",
+    "Lytter den studerende for at forstå, eller for at svare/løse?",
+    "Undgår den studerende at vurdere, bedømme eller korrigere borgerens følelser?",
+    "Viser den studerende ægte indlevelse i borgerens perspektiv?",
+    "Er den studerende bevidst om egen magtposition i relationen?"
+  ]
+}
