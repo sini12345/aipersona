@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.json
+!personas/*.json
+!theories/*.json
+!requirements.txt
+session_*.json
