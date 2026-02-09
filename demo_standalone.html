@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Persona Træningsplatform - Demo</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#f8f9fa;--surface:#fff;--primary:#2563eb;--primary-light:#dbeafe;--text:#1e293b;--text-muted:#64748b;--border:#e2e8f0;--success:#16a34a;--success-bg:#f0fdf4;--warning-bg:#fffbeb;--user-bg:#eff6ff;--persona-bg:#f8fafc;--radius:12px}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+        .app{display:grid;grid-template-columns:340px 1fr;height:100vh}
+        .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:24px;overflow-y:auto}
+        .sidebar h1{font-size:1.25rem;margin-bottom:4px}
+        .sidebar .subtitle{font-size:.8rem;color:var(--text-muted);margin-bottom:24px}
+        .section{margin-bottom:20px}
+        .section-title{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:8px}
+        select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 12px center;padding-right:32px;color:var(--text);appearance:none;cursor:pointer}
+        .persona-info{background:var(--bg);border-radius:8px;padding:12px;margin-top:8px;font-size:.85rem}
+        .persona-info .context{font-weight:600;color:var(--primary);margin-bottom:4px}
+        .persona-info .desc{color:var(--text-muted)}
+        .themes{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+        .theme-tag{background:var(--primary-light);color:var(--primary);font-size:.72rem;padding:2px 8px;border-radius:12px;font-weight:500}
+        .theory-info{background:var(--success-bg);border-radius:8px;padding:12px;margin-top:8px;font-size:.82rem;color:var(--text-muted)}
+        .theory-info .authors{font-style:italic;margin-bottom:4px}
+        .btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;transition:.15s;margin-bottom:8px}
+        .btn-primary{background:var(--primary);color:#fff}
+        .btn-primary:hover{background:#1d4ed8}
+        .btn-secondary{background:var(--bg);color:var(--text);border:1px solid var(--border)}
+        .btn-secondary:hover{background:var(--border)}
+        .btn:disabled{opacity:.5;cursor:not-allowed}
+        .main{display:flex;flex-direction:column;height:100vh}
+        .demo-banner{background:var(--warning-bg);border-bottom:2px solid #f59e0b;padding:10px 24px;text-align:center;font-size:.85rem;color:#92400e}
+        .scenario{padding:16px 24px;background:var(--primary-light);border-bottom:1px solid var(--border);display:flex;gap:16px;align-items:flex-start}
+        .scenario-icon{font-size:1.5rem;flex-shrink:0}
+        .scenario-text .setting{font-weight:600;font-size:.9rem}
+        .scenario-text .intro{font-size:.85rem;color:var(--text-muted);margin-top:2px}
+        .theory-banner{padding:8px 24px;background:var(--success-bg);border-bottom:1px solid var(--border);font-size:.82rem;display:none;align-items:center;gap:8px}
+        .messages{flex:1;overflow-y:auto;padding:24px}
+        .message{display:flex;gap:12px;margin-bottom:20px;max-width:800px}
+        .message-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+        .message-user .message-avatar{background:var(--primary-light)}
+        .message-persona .message-avatar{background:#fef3c7}
+        .message-content{padding:12px 16px;border-radius:var(--radius);font-size:.92rem;line-height:1.65}
+        .message-user .message-content{background:var(--user-bg)}
+        .message-persona .message-content{background:var(--persona-bg);border:1px solid var(--border)}
+        .thinking-toggle{font-size:.78rem;color:var(--text-muted);cursor:pointer;margin-top:6px;user-select:none}
+        .thinking-toggle:hover{color:var(--primary)}
+        .thinking-content{display:none;margin-top:8px;padding:10px 12px;background:#fefce8;border-radius:8px;font-size:.82rem;color:var(--text-muted);font-style:italic;white-space:pre-wrap}
+        .thinking-content.show{display:block}
+        .typing{display:none;padding:12px 16px;color:var(--text-muted);font-size:.85rem;font-style:italic}
+        .typing.show{display:flex;gap:12px;align-items:center}
+        .input-area{padding:16px 24px;border-top:1px solid var(--border);background:var(--surface)}
+        .input-row{display:flex;gap:8px;max-width:800px}
+        .input-row input{flex:1;padding:12px 16px;border:1px solid var(--border);border-radius:var(--radius);font-size:.95rem;outline:none;transition:.15s}
+        .input-row input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+        .input-row input:disabled{background:var(--bg)}
+        .send-btn{padding:12px 20px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius);font-size:.9rem;font-weight:600;cursor:pointer;transition:.15s}
+        .send-btn:hover{background:#1d4ed8}
+        .send-btn:disabled{opacity:.5;cursor:not-allowed}
+        .feedback-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
+        .feedback-overlay.show{display:flex}
+        .feedback-panel{background:var(--surface);border-radius:16px;width:90%;max-width:700px;max-height:85vh;overflow-y:auto;padding:32px}
+        .feedback-panel h2{margin-bottom:4px}
+        .feedback-meta{font-size:.82rem;color:var(--text-muted);margin-bottom:20px}
+        .feedback-content{font-size:.92rem;line-height:1.7;white-space:pre-wrap}
+        .setup-screen{display:flex;align-items:center;justify-content:center;flex:1;padding:48px}
+        .setup-card{text-align:center;max-width:400px}
+        .setup-card h2{font-size:1.5rem;margin-bottom:8px}
+        .setup-card p{color:var(--text-muted);margin-bottom:24px}
+        @media(max-width:768px){.app{grid-template-columns:1fr}.sidebar{display:none}}
+    </style>
+</head>
+<body>
+
+<script>
+// ===== ALL DATA EMBEDDED =====
+const PERSONAS = {
+    ali: {
+        id:"ali", name:"Ali", age:19,
+        context:"Socialpædagogisk opholdssted (§ 66)",
+        background_short:"19-årig fyr fra Tingbjerg, anbragt pga. omsorgssvigt. Tvangsfjernet som 15-årig.",
+        themes:["Relationsarbejde","Tillid og autenticitet","Modstand og forsvar","Anerkendelse"],
+        scenario:{setting:"Et socialpædagogisk opholdssted for unge", intro:"Du er ny pædagog på opholdsstedet. Ali sidder i fællesrummet og kigger på sin telefon. Han har ikke set dig endnu."},
+        responses:[
+            {response:"Hvad vil du?", thinking:"Den studerende prøver at starte en samtale. Jeg kender dem ikke. Jeg har set mange pædagoger komme og gå. Lad mig se om de er ægte eller bare kører deres program."},
+            {response:"Jamen, okay... Du er ny her, eller hvad?", thinking:"De virker ikke helt som de andre. Men jeg stoler ikke på det endnu. Alle starter pænt. Lad mig teste dem lidt."},
+            {response:"Alle siger det jo. At de vil hjælpe. Og så smutter de igen efter tre måneder.", thinking:"De siger de vil hjælpe. Det har jeg hørt før. Min gamle kontaktperson sagde det samme. Og den før det."},
+            {response:"... du er sgu lidt anderledes end de andre.", thinking:"De pressede ikke. De blev ikke fornærmede. Måske... men jeg holder stadig lidt igen. Det er for tidligt at slippe garden."},
+            {response:"Jeg ved det ikke. Nogle gange tænker jeg bare... hvad er pointen, du ved?", thinking:"De lytter faktisk. De prøver ikke at fixe mig. Det føles... okay. Måske kan jeg sige lidt mere."},
+        ]
+    },
+    dennis: {
+        id:"dennis", name:"Dennis", age:34,
+        context:"Botilbud for voksne med funktionsnedsættelse (§ 108)",
+        background_short:"34-årig mand med lettere intellektuel funktionsnedsættelse og angst. Bor på botilbud.",
+        themes:["Selvbestemmelse","Magtforhold og magtanvendelse","Empowerment","Mentalisering"],
+        scenario:{setting:"Et § 108 botilbud for voksne med funktionsnedsættelse", intro:"Du er pædagog på Dennis' botilbud. Dennis kommer hen til dig i køkkenet. Han ser utilfreds ud. Personalet har besluttet at ændre hans ugentlige indkøbsdag, uden at spørge ham."},
+        responses:[
+            {response:"Det er IKKE fair. Jeg handler altid om tirsdagen.", thinking:"Min indkøbsdag er ændret uden at nogen spurgte mig. Det er MIN tirsdag. Jeg har handlet om tirsdagen i to år."},
+            {response:"... ved ikke...", thinking:"De spørger hvordan jeg har det. Det er svært at sige. Jeg er sur og ked af det på samme tid. Ordene sidder fast."},
+            {response:"Tina siger også I ikke må bestemme det. Det er MINE penge.", thinking:"Tina forstår mig. Hun siger personalet ikke bare kan bestemme over mig."},
+            {response:"*Dennis tripper med foden* Kan du ikke bare... sige til de andre?", thinking:"Måske kan denne pædagog hjælpe mig. De lytter i hvert fald. Men jeg er bange for at de bare siger det er reglerne."},
+            {response:"Okay... men kun hvis det stadig er MINE penge. Og jeg bestemmer hvad jeg køber.", thinking:"De respekterer at det er min beslutning. Det føles bedre."},
+        ]
+    },
+    simone: {
+        id:"simone", name:"Simone", age:27,
+        context:"Socialpsykiatri - bostøtte (§ 85)",
+        background_short:"27-årig kvinde i socialpsykiatrien. Emotionelt ustabil personlighedsforstyrrelse (BPD). Modtager bostøtte.",
+        themes:["Grænsesætning","Mentaliseringssvigt","Recovery","Low arousal","Splitting"],
+        scenario:{setting:"Simones lejlighed - du er bostøtte og kommer på dit ugentlige besøg", intro:"Du ringer på hos Simone til jeres ugentlige bostøttetime. Hun åbner døren. Hun ser udkørt ud, lejligheden er rodet. Sidste gang I sås, var det en rigtig god samtale. I dag er noget anderledes."},
+        responses:[
+            {response:"Hvad laver du overhovedet her? Det hjælper jo ikke alligevel.", thinking:"Jeg har ikke sovet. Lejligheden er rodet. Jeg gider ikke den her samtale i dag. Lad mig se om de bliver bange."},
+            {response:"Ja, du siger det... Det sagde den forrige også. Og hende før det.", thinking:"De prøver at være forstående. Men det kender jeg. Alle starter med at være søde."},
+            {response:"Nej, men DU er jo så professionel. Du har sikkert læst alt om folk som mig.", thinking:"Jeg provokerer dem. Jeg ved det godt. Men jeg skal vide om de kan holde til mig."},
+            {response:"*Simone trækker ærmerne ned over hænderne* ... undskyld. Jeg mente det ikke.", thinking:"De blev ikke vrede. De blev ikke bange. De blev bare... rolige. Det overrasker mig."},
+            {response:"Tror du... tror du jeg bliver normal nogen sinde?", thinking:"Jeg turde spørge. Det er sjældent. Der er noget ved den her person der gør at jeg tør. De dømmer mig ikke."},
+        ]
+    },
+    morten: {
+        id:"morten", name:"Morten", age:45,
+        context:"Botilbud for mennesker med erhvervet hjerneskade (§ 107)",
+        background_short:"45-årig mand med erhvervet hjerneskade efter trafikulykke. Tidligere tømrer.",
+        themes:["Neuropædagogik","Identitetstab og sorg","ADL-støtte","Pårørendesamarbejde","Kognitiv tilpasning"],
+        scenario:{setting:"Et § 107 botilbud for mennesker med erhvervet hjerneskade", intro:"Morten sidder ved spisebordet med en kop kaffe. Han har forsøgt at lave morgenmad selv, men det er gået galt - der er mælk ud over bordet og han sidder bare og stirrer. Du er pædagog og kommer ind i køkkenet."},
+        responses:[
+            {response:"Hvad fanden kigger du på?", thinking:"Mælken er væltet overalt. Jeg kan ikke engang lave morgenmad selv mere. Og nu står der en og ser det. Det er ydmygende."},
+            {response:"*Morten knytter hænderne* Jeg KUNNE jo godt det der før! For helvede...", thinking:"Jeg var tømrer i 18 år. Jeg byggede huse. Og nu kan jeg ikke hælde mælk op."},
+            {response:"Lad mig nu bare selv...", thinking:"Jeg vil ikke have hjælp. Hjælp betyder at jeg ikke kan selv. Men... det kan jeg heller ikke."},
+            {response:"*Morten kigger ud af vinduet* Da jeg var tømrer, der kunne jeg... alt.", thinking:"Jeg tænker på dengang. Da jeg var mig. Nu ved jeg ikke hvem jeg er."},
+            {response:"... det er fint. *Det er ikke fint*", thinking:"De tilbød at hjælpe uden at gøre det til en stor ting. Det var... okay. Men sorgen sidder stadig."},
+        ]
+    },
+    aya: {
+        id:"aya", name:"Aya", age:22,
+        context:"Bofællesskab for unge med autisme (§ 107)",
+        background_short:"22-årig kvinde med autismespektrumforstyrrelse (ASF). Højtfungerende men overstimuleres let.",
+        themes:["Autismepædagogik","Struktur og forudsigelighed","Sensorisk forståelse","TEACCH-principper","Neuropædagogik"],
+        scenario:{setting:"Et § 107 bofællesskab for unge voksne med ASF", intro:"Du skal fortælle Aya at fællesmiddagen i aften er rykket fra kl. 18:00 til kl. 17:30, og at menuen er ændret fra pasta til fisk. Aya sidder ved sit skrivebord på sit værelse med høretelefoner på. Døren står på klem."},
+        responses:[
+            {response:"*Aya tager ikke høretelefonerne af. Hun har ikke hørt dig.*", thinking:"Jeg har høretelefonerne på og studerer. Hvis nogen vil tale med mig, skal de sørge for at jeg ved de er der."},
+            {response:"Kl. 17:30 i stedet for 18:00. Det er 30 minutter tidligere. Hvorfor?", thinking:"En ændring. Jeg har brug for at forstå den præcist. Hvornår og hvorfor?"},
+            {response:"Det stod ikke på ugeskemaet. Ugeskemaet siger pasta kl. 18.", thinking:"Ugeskemaet er min reference. Hvis ugeskemaet siger én ting og virkeligheden er en anden, er det ugeskemaet der er forkert."},
+            {response:"Fisk. Hvad slags fisk? Jeg spiser ikke fisk med skind. Teksturen er ubehagelig.", thinking:"Fisk er ikke bare fisk. Nogle har skind og det føles forfærdeligt i munden."},
+            {response:"Kan du skrive det ned? Så opdaterer jeg mit skema. Og jeg laver min egen mad hvis det er fisk med skind.", thinking:"Hvis de skriver det ned, kan jeg forholde mig til det. Det sænker min stress."},
+        ]
+    }
+};
+
+const THEORIES = {
+    mentalisering: {name:"Mentalisering", authors:"Peter Fonagy, Jon G. Allen, Anthony Bateman", summary:"Evnen til at forstå adfærd i lyset af bagvedliggende mentale tilstande - tanker, følelser, ønsker, behov."},
+    anerkendelse: {name:"Anerkendelse", authors:"Axel Honneth, Anne-Lise Løvlie Schibbye, Berit Bae", summary:"At møde den anden som et selvstændigt subjekt med egne oplevelser, følelser og perspektiver."},
+    low_arousal: {name:"Low Arousal / Rogivende pædagogik", authors:"Bo Hejlskov Elvén, Andrew McDonnell", summary:"At reducere stress og konfliktniveau. Mennesker der kan opføre sig ordentligt, gør det."},
+    empowerment: {name:"Empowerment", authors:"Robert Adams, John Andersen, Nanna Mik-Meyer", summary:"At styrke menneskers magt over eget liv og støtte dem i at bruge egne ressourcer."},
+    neuropaedagogik: {name:"Neuropædagogik", authors:"Kjeld Fredens, Peter Thybo, Anna Gade", summary:"Bro mellem hjerneforskning og pædagogisk praksis. Tilpasning til borgerens kognitive profil."}
+};
+
+// ===== APP STATE =====
+let currentPersonaId = null;
+let currentTheoryId = null;
+let responseIndex = 0;
+let interactionCount = 0;
+
+// ===== BUILD UI =====
+document.body.innerHTML = `
+<div class="demo-banner"><strong>DEMO-TILSTAND</strong> — Forudskrevne svar. Viser hvordan platformen fungerer med AI-genererede svar.</div>
+<div class="app">
+    <div class="sidebar">
+        <h1>Persona Træning</h1>
+        <p class="subtitle">Social- og specialpædagogisk samtale-simulation</p>
+
+        <div class="section">
+            <div class="section-title">1. Vælg persona</div>
+            <select id="personaSelect" onchange="updatePersonaInfo()">
+                ${Object.values(PERSONAS).map(p => `<option value="${p.id}">${p.name} (${p.age} år)</option>`).join('')}
+            </select>
+            <div class="persona-info" id="personaInfo"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">2. Vælg teori (valgfri)</div>
+            <select id="theorySelect" onchange="updateTheoryInfo()">
+                <option value="">Ingen teori valgt</option>
+                ${Object.entries(THEORIES).map(([id,t]) => `<option value="${id}">${t.name}</option>`).join('')}
+            </select>
+            <div class="theory-info" id="theoryInfo" style="display:none"></div>
+        </div>
+
+        <div class="section" style="margin-top:auto;padding-top:16px">
+            <button class="btn btn-primary" id="startBtn" onclick="startSession()">Start samtale</button>
+            <button class="btn btn-secondary" id="feedbackBtn" onclick="showFeedback()" disabled>Afslut og få feedback</button>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="setup-screen" id="setupScreen">
+            <div class="setup-card">
+                <h2>Vælg en persona</h2>
+                <p>Vælg hvem du vil tale med i sidebaren, og tryk "Start samtale"</p>
+            </div>
+        </div>
+        <div id="chatScreen" style="display:none;flex:1;display:flex;flex-direction:column">
+            <div class="scenario" id="scenarioBanner"></div>
+            <div class="theory-banner" id="theoryBanner"></div>
+            <div class="messages" id="messages"></div>
+            <div class="typing" id="typing"><span>💭</span><span id="typingText">Tænker...</span></div>
+            <div class="input-area">
+                <div class="input-row">
+                    <input type="text" id="chatInput" placeholder="Skriv din besked..." onkeydown="if(event.key==='Enter'&&!event.shiftKey)sendMessage()" disabled>
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="feedback-overlay" id="feedbackOverlay">
+    <div class="feedback-panel">
+        <h2>Feedback på din kommunikation</h2>
+        <div class="feedback-meta" id="feedbackMeta"></div>
+        <div class="feedback-content" id="feedbackContent"></div>
+        <button class="btn btn-primary" style="margin-top:20px" onclick="document.getElementById('feedbackOverlay').classList.remove('show')">Luk</button>
+    </div>
+</div>`;
+
+// Init
+updatePersonaInfo();
+
+function updatePersonaInfo() {
+    const id = document.getElementById('personaSelect').value;
+    const p = PERSONAS[id];
+    document.getElementById('personaInfo').innerHTML = `
+        <div class="context">${p.context}</div>
+        <div class="desc">${p.background_short}</div>
+        <div class="themes">${p.themes.map(t=>`<span class="theme-tag">${t}</span>`).join('')}</div>`;
+}
+
+function updateTheoryInfo() {
+    const id = document.getElementById('theorySelect').value;
+    const info = document.getElementById('theoryInfo');
+    if (!id) { info.style.display='none'; return; }
+    const t = THEORIES[id];
+    info.style.display='block';
+    info.innerHTML = `<div class="authors">${t.authors}</div><div>${t.summary}</div>`;
+}
+
+function startSession() {
+    currentPersonaId = document.getElementById('personaSelect').value;
+    currentTheoryId = document.getElementById('theorySelect').value || null;
+    responseIndex = 0;
+    interactionCount = 0;
+
+    const p = PERSONAS[currentPersonaId];
+
+    document.getElementById('setupScreen').style.display='none';
+    document.getElementById('chatScreen').style.display='flex';
+    document.getElementById('messages').innerHTML='';
+
+    document.getElementById('scenarioBanner').innerHTML = `
+        <span class="scenario-icon">📍</span>
+        <div class="scenario-text">
+            <div class="setting">${p.scenario.setting}</div>
+            <div class="intro">${p.scenario.intro}</div>
+        </div>`;
+
+    const tb = document.getElementById('theoryBanner');
+    if (currentTheoryId) {
+        const t = THEORIES[currentTheoryId];
+        tb.style.display='flex';
+        tb.innerHTML=`📚 <strong>Teori: ${t.name}</strong> — ${t.authors}`;
+    } else {
+        tb.style.display='none';
+    }
+
+    document.getElementById('chatInput').disabled=false;
+    document.getElementById('chatInput').placeholder=`Skriv til ${p.name}...`;
+    document.getElementById('chatInput').focus();
+    document.getElementById('sendBtn').disabled=false;
+    document.getElementById('feedbackBtn').disabled=false;
+    document.getElementById('startBtn').textContent='Ny samtale';
+}
+
+function addMessage(role, text, thinking) {
+    const el = document.getElementById('messages');
+    const isUser = role==='user';
+    let thinkHtml = '';
+    if (thinking) {
+        const id = 'th-'+Date.now();
+        thinkHtml = `<div class="thinking-toggle" onclick="document.getElementById('${id}').classList.toggle('show')">▶ Vis tankeproces</div><div class="thinking-content" id="${id}">${thinking}</div>`;
+    }
+    el.innerHTML += `<div class="message ${isUser?'message-user':'message-persona'}"><div class="message-avatar">${isUser?'🧑‍🎓':'🧑'}</div><div><div class="message-content">${text}</div>${thinkHtml}</div></div>`;
+    el.scrollTop = el.scrollHeight;
+}
+
+function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text || !currentPersonaId) return;
+
+    input.value='';
+    addMessage('user', text);
+
+    const p = PERSONAS[currentPersonaId];
+    const typing = document.getElementById('typing');
+    document.getElementById('typingText').textContent=`${p.name} tænker...`;
+    typing.classList.add('show');
+    input.disabled=true;
+    document.getElementById('sendBtn').disabled=true;
+
+    // Simulate thinking delay
+    setTimeout(() => {
+        typing.classList.remove('show');
+        const responses = p.responses;
+        const r = responseIndex < responses.length ? responses[responseIndex] : responses[Math.floor(Math.random()*responses.length)];
+        responseIndex++;
+        interactionCount++;
+        addMessage('persona', r.response, r.thinking);
+        input.disabled=false;
+        document.getElementById('sendBtn').disabled=false;
+        input.focus();
+    }, 800 + Math.random()*1200);
+}
+
+function showFeedback() {
+    const p = PERSONAS[currentPersonaId];
+    document.getElementById('feedbackOverlay').classList.add('show');
+    document.getElementById('feedbackMeta').textContent=`${interactionCount} interaktioner | Persona: ${p.name}${currentTheoryId ? ' | Teori: '+THEORIES[currentTheoryId].name : ''}`;
+    document.getElementById('feedbackContent').textContent =
+`Overordnet vurdering
+Dette er en demo-session med forudskrevne svar. I en rigtig session ville du få detaljeret, personlig feedback baseret på din samtale med ${p.name}.
+
+Sådan virker feedback i den fulde version:
+
+Persona-kriterier
+Hvert kriterie scores 1-5 med konkrete eksempler fra din samtale. Fx: "I din anden besked sagde du '...' - det viser god evne til at lytte og tilpasse dig."
+
+${currentTheoryId ? `Teori-feedback (${THEORIES[currentTheoryId].name})
+Din tilgang analyseres op mod teoriens kernebegreber. Hvilke begreber brugte du? Hvilke manglede? Med direkte citater fra samtalen.\n\n` : ''}Forbedringsforslag
+Et konkret, handlingsanvisende forslag til næste samtale med ${p.name}.
+
+Start med en API-nøgle for at få ægte AI-genereret feedback.`;
+}
+</script>
+</body>
+</html>
