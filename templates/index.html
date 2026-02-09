@@ -526,6 +526,12 @@
     </style>
 </head>
 <body>
+    {% if demo_mode %}
+    <div style="background:#fffbeb; border-bottom:2px solid #f59e0b; padding:10px 24px; text-align:center; font-size:0.85rem; color:#92400e;">
+        <strong>DEMO-TILSTAND</strong> — Forudskrevne svar, ingen API-forbindelse. Svar er eksempler på hvordan personaerne reagerer.
+    </div>
+    {% endif %}
+
     <div class="app">
         <!-- Sidebar -->
         <div class="sidebar">
