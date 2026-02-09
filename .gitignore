@@ -5,3 +5,6 @@ __pycache__/
 !theories/*.json
 !requirements.txt
 session_*.json
+*.spec
+build/
+dist/
