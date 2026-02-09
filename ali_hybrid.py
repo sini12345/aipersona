@@ -22,7 +22,7 @@ class AliPersona:
         Args:
             api_key: Anthropic API key (eller brug ANTHROPIC_API_KEY env var)
             model: "opus" for bedste kvalitet, "sonnet" for hurtigere/billigere
-            extended_thinking: True = Ali tænker før hun svarer (anbefalet)
+            extended_thinking: True = Ali tænker før han svarer (anbefalet)
         """
         self.client = anthropic.Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
         self.extended_thinking = extended_thinking
@@ -46,7 +46,7 @@ class AliPersona:
         }
         
         # Ali's persona
-        self.persona_prompt = """Du er Ali, en 19-årig pige fra Tingbjerg/Nørrebro i København.
+        self.persona_prompt = """Du er Ali, en 19-årig dreng fra Tingbjerg/Nørrebro i København.
 
 BAGGRUND:
 - Vokset op i et belastet miljø med manglende tillid til voksne/autoriteter
@@ -301,7 +301,7 @@ def interactive_demo():
     
     # Vælg extended thinking
     print("\nVælg thinking mode:")
-    print("1. Extended thinking ON (Ali tænker før hun svarer - anbefalet)")
+    print("1. Extended thinking ON (Ali tænker før han svarer - anbefalet)")
     print("2. Extended thinking OFF (hurtigere, billigere)")
     thinking_choice = input("Valg (1/2): ").strip()
     extended_thinking = thinking_choice == "1"
@@ -311,7 +311,7 @@ def interactive_demo():
     
     print(f"\n✓ Ali klar med {model.upper()} + thinking={'ON' if extended_thinking else 'OFF'}")
     print("\n[SCENARIO: Du møder Ali for første gang på et ungdomscenter]")
-    print("Ali står ved vinduet og kigger ud. Hun har ikke set dig endnu.")
+    print("Ali står ved vinduet og kigger ud. Han har ikke set dig endnu.")
     print("\nSkriv 'quit' for at afslutte, 'stats' for statistik.\n")
     
     while True:

@@ -14,7 +14,7 @@ MODELS = {
     "Opus 4.6 (bedste kvalitet)": "claude-opus-4-6",
 }
 
-PERSONA_PROMPT = """Du er Ali, en 19-årig pige fra Tingbjerg/Nørrebro i København.
+PERSONA_PROMPT = """Du er Ali, en 19-årig dreng fra Tingbjerg/Nørrebro i København.
 
 BAGGRUND:
 - Vokset op i et belastet miljø med manglende tillid til voksne/autoriteter
@@ -52,9 +52,9 @@ Tag dig tid til at tænke over den studerendes tilgang. Reagér autentisk basere
 
 SCENARIO = """\
 **Scenario:** Du møder Ali for første gang på et ungdomscenter.
-Ali står ved vinduet og kigger ud. Hun har ikke set dig endnu.
+Ali står ved vinduet og kigger ud. Han har ikke set dig endnu.
 
-*Skriv til Ali som om du var en pædagogstuderende der møder hende for første gang.*
+*Skriv til Ali som om du var en pædagogstuderende der møder ham for første gang.*
 """
 
 
@@ -168,7 +168,7 @@ with gr.Blocks(
             thinking_checkbox = gr.Checkbox(
                 value=True,
                 label="Extended Thinking (anbefalet)",
-                info="Ali tænker grundigere før hun svarer",
+                info="Ali tænker grundigere før han svarer",
             )
             api_key_input = gr.Textbox(
                 type="password",
