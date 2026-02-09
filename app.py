@@ -153,7 +153,6 @@ Afslut med 2-3 konkrete råd til næste samtale."""
 
 with gr.Blocks(
     title="Ali - Træningssystem",
-    theme=gr.themes.Soft(),
 ) as demo:
     gr.Markdown("# Ali - Træningssystem for pædagogstuderende")
     gr.Markdown(SCENARIO)
@@ -181,8 +180,7 @@ with gr.Blocks(
     # Chat-interface
     chat = gr.ChatInterface(
         fn=respond,
-        type="messages",
-        chatbot=gr.Chatbot(height=500, type="messages"),
+        chatbot=gr.Chatbot(height=500),
         textbox=gr.Textbox(placeholder="Skriv til Ali...", label="Din besked"),
         additional_inputs=[model_dropdown, thinking_checkbox, api_key_input],
     )
