@@ -1,4 +1,4 @@
-name: Build Ali Executables
+name: Test Ali Web App
 
 on:
   push:
@@ -8,52 +8,21 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  test:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install anthropic pyinstaller
-    
-    - name: Build Windows executable
-      run: |
-        pyinstaller --onefile --noconsole --name Ali-Trainer ali_hybrid.py
-    
-    - name: Upload Windows artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ali-windows
-        path: dist/Ali-Trainer.exe
 
-  build-mac:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v4
-    
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install anthropic pyinstaller
-    
-    - name: Build macOS app
+        pip install -r requirements.txt
+
+    - name: Verify app loads
       run: |
-        pyinstaller --onefile --windowed --name Ali-Trainer ali_hybrid.py
-    
-    - name: Upload macOS artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ali-macos
-        path: dist/Ali-Trainer.app
+        python -c "import app; print('App loaded successfully')"
