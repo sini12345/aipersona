@@ -1,0 +1,44 @@
+{
+  "id": "neuropaedagogik",
+  "name": "Neuropædagogik",
+  "authors": "Kjeld Fredens, Peter Thybo, Anna Gade",
+  "summary": "Neuropædagogik bygger bro mellem hjerneforskning og pædagogisk praksis. Den handler om at forstå hvordan hjernen fungerer - og hvordan man tilrettelægger pædagogiske indsatser der tager hensyn til borgerens kognitive profil, fx efter hjerneskade, ved udviklingsforstyrrelser eller ved psykisk sårbarhed.",
+  "key_concepts": [
+    {
+      "name": "Kognitiv profil",
+      "definition": "Hvert menneske har en unik kognitiv profil med styrker og udfordringer. Pædagogikken skal tilpasses profilen, ikke omvendt"
+    },
+    {
+      "name": "Eksekutive funktioner",
+      "definition": "Hjernens 'direktør' - planlægning, overblik, impulskontrol, fleksibilitet. Ofte nedsat ved hjerneskade, ADHD, og autisme"
+    },
+    {
+      "name": "Kompenserende strategier",
+      "definition": "At tilbyde redskaber og strukturer der kompenserer for kognitive udfordringer: skemaer, påmindelser, visualisering, opdeling af opgaver"
+    },
+    {
+      "name": "Arousal og stresstærskel",
+      "definition": "Hjernen fungerer optimalt inden for et bestemt arousalniveau. For høj eller lav arousal nedsætter kognitive funktioner. Pædagogen skal hjælpe med at regulere"
+    },
+    {
+      "name": "Nedsat sygdomserkendelse (anosognosi)",
+      "definition": "Nogle borgere (specielt efter hjerneskade) er ikke bevidste om egne begrænsninger. Det er neurologisk - ikke benægtelse eller dovenskab"
+    },
+    {
+      "name": "Struktur og forudsigelighed",
+      "definition": "En forudsigelig hverdag reducerer kognitivt pres og frigør ressourcer til andet. Rutiner, visuel struktur og forberedelse er centrale redskaber"
+    },
+    {
+      "name": "Energiforvaltning",
+      "definition": "Kognitive ressourcer er begrænsede og opbruges. Pædagogen hjælper med at fordele energi over dagen og undgå overbelastning"
+    }
+  ],
+  "evaluation_focus": [
+    "Tilpasser den studerende sin kommunikation til borgerens kognitive profil?",
+    "Bruger den studerende konkret, kort og enkelt sprog?",
+    "Tilbyder den studerende kompenserende strategier (struktur, visuel støtte, opdeling)?",
+    "Er den studerende opmærksom på borgerens arousalniveau og energi?",
+    "Undgår den studerende at stille for mange krav på én gang?",
+    "Respekterer den studerende borgerens tempo og behov for pauser?"
+  ]
+}
