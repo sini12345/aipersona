@@ -2,7 +2,7 @@
 title: AI Persona Traeningsplatform
 emoji: "🎓"
 colorFrom: indigo
-colorTo: emerald
+colorTo: green
 sdk: gradio
 sdk_version: "5.12.0"
 app_file: app.py

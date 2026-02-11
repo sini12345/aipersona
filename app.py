@@ -523,7 +523,16 @@ CUSTOM_CSS = """
 
 
 def create_app():
-    with gr.Blocks(title="AI Persona Traeningsplatform") as app:
+    with gr.Blocks(
+        title="AI Persona Traeningsplatform",
+        css=CUSTOM_CSS,
+        theme=gr.themes.Soft(
+            primary_hue="indigo",
+            secondary_hue="emerald",
+            neutral_hue="slate",
+            font=gr.themes.GoogleFont("Inter"),
+        ),
+    ) as app:
 
         session_state = gr.State({})
 
@@ -652,16 +661,7 @@ def create_app():
 # ---------------------------------------------------------------------------
 # Launch
 # ---------------------------------------------------------------------------
+demo = create_app()
+
 if __name__ == "__main__":
-    app = create_app()
-    app.launch(
-        server_name="0.0.0.0",
-        server_port=7860,
-        css=CUSTOM_CSS,
-        theme=gr.themes.Soft(
-            primary_hue="indigo",
-            secondary_hue="emerald",
-            neutral_hue="slate",
-            font=gr.themes.GoogleFont("Inter"),
-        ),
-    )
+    demo.launch(server_name="0.0.0.0", server_port=7860)
