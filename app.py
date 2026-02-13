@@ -52,6 +52,12 @@ def refresh_scenarios(persona_name: str):
     return gr.Dropdown(choices=labels, value=selected), brief
 
 
+def refresh_scenario_brief(persona_name: str, scenario_label: str):
+    selected_label = scenario_label or _default_scenario_label(persona_name)
+    scenario = get_scenario(persona_name, selected_label)
+    return format_scenario_brief(persona_name, scenario)
+
+
 def start_session(persona_name: str, scenario_label: str, learning_goal: str, difficulty: int):
     persona_text = load_persona_markdown(PERSONA_FILES[persona_name])
     selected_label = scenario_label or _default_scenario_label(persona_name)
@@ -199,6 +205,12 @@ def build_ui():
             fn=refresh_scenarios,
             inputs=[persona],
             outputs=[scenario, scenario_brief],
+        )
+
+        scenario.change(
+            fn=refresh_scenario_brief,
+            inputs=[persona, scenario],
+            outputs=[scenario_brief],
         )
 
         send_btn.click(
