@@ -1,325 +1,176 @@
-"""
-Ali Træningssystem - HuggingFace Spaces Gradio Interface
-Pædagogstuderende kan øve samtaler med Ali, en 19-årig fra Tingbjerg/Nørrebro
-"""
+﻿import os
+from datetime import datetime
 
-import os
+import anthropic
 import gradio as gr
-from ali_hybrid import AliPersona
+
+from core.feedback_engine import build_end_feedback
+from core.logger import save_session_log
+from core.prompt_builder import build_system_prompt, load_persona_markdown
+from core.state_engine import PersonaState, update_state_from_turn
 
 
-# ---------------------------------------------------------------------------
-# Helper functions
-# ---------------------------------------------------------------------------
-
-def check_api_key() -> bool:
-    """Kontrollerer om ANTHROPIC_API_KEY er sat som miljøvariabel."""
-    return bool(os.environ.get("ANTHROPIC_API_KEY"))
-
-
-def create_ali_instance(model: str, extended_thinking: bool):
-    """
-    Opretter en ny AliPersona instans.
-    Returnerer None hvis API key mangler.
-    """
-    if not check_api_key():
-        return None
-    return AliPersona(model=model, extended_thinking=extended_thinking)
-
-
-def format_stats(ali) -> str:
-    """
-    Formaterer session statistik til visning i Gradio.
-    Returnerer en dansk-sproget Markdown streng.
-    """
-    if ali is None:
-        return "_Ingen aktiv session._"
-
-    interactions = ali.session_stats.get("interactions", [])
-    if not interactions:
-        return "_Ingen interaktioner endnu._"
-
-    cost = ali.estimate_cost()
-    stats = ali.get_session_stats()
-
-    lines = [
-        "### Session Statistik",
-        f"**Model:** {cost['model'].upper()}",
-        f"**Extended thinking:** {'TIL' if cost['extended_thinking'] else 'FRA'}",
-        f"**Antal beskeder:** {len(interactions)}",
-        f"**Tokens i alt:** {cost['total_tokens']:,}",
-        f"&nbsp;&nbsp;- Input: {cost['input_tokens']:,}",
-        f"&nbsp;&nbsp;- Output: {cost['output_tokens']:,}",
-        f"**Estimeret pris:** {cost['cost_dkk']} DKK ({cost['cost_usd']} USD)",
-        f"**Varighed:** {int(stats['duration_seconds'])} sek.",
-    ]
-    if stats.get("avg_tokens_per_interaction"):
-        lines.append(
-            f"**Gns. tokens/besked:** {int(stats['avg_tokens_per_interaction']):,}"
-        )
-
-    return "\n".join(lines)
-
-
-# ---------------------------------------------------------------------------
-# Core chat handler
-# ---------------------------------------------------------------------------
-
-def respond(user_message, chat_history, ali_state, show_thinking):
-    """
-    Behandler en brugerbesked og returnerer opdateret tilstand.
-
-    Returns:
-        chat_history:  Opdateret liste til gr.Chatbot
-        thinking_text: Ali's tankeproces (tom streng hvis ikke valgt)
-        stats_text:    Opdateret statistik Markdown
-    """
-    if ali_state is None:
-        error_msg = (
-            "FEJL: ANTHROPIC_API_KEY er ikke konfigureret. "
-            "Kontakt administratoren af dette Space."
-        )
-        chat_history = chat_history + [[user_message, error_msg]]
-        return chat_history, "", "_API nøgle mangler._"
-
-    if not user_message.strip():
-        return chat_history, "", format_stats(ali_state)
-
-    result = ali_state.chat(user_message.strip())
-
-    if result.get("error"):
-        ali_response = f"[FEJL: {result['error']}]"
-        thinking_text = ""
-    else:
-        ali_response = result.get("response", "")
-        raw_thinking = result.get("thinking") or ""
-        thinking_text = raw_thinking if show_thinking else ""
-
-    chat_history = chat_history + [[user_message, ali_response]]
-    stats_text = format_stats(ali_state)
-
-    return chat_history, thinking_text, stats_text
-
-
-# ---------------------------------------------------------------------------
-# Settings change / session reset
-# ---------------------------------------------------------------------------
-
-MODEL_MAP = {
-    "Sonnet 4.5 (hurtig, anbefalet)": "sonnet",
-    "Opus 4.5 (bedste kvalitet)": "opus",
+PERSONA_FILES = {
+    "Ali": "personas/ali.md",
+    "Sofie": "personas/sofie.md",
+    "Mika": "personas/mika.md",
 }
 
+LEARNING_GOALS = [
+    "Alliance",
+    "Deeskalering",
+    "Graensesaetning",
+]
 
-def reset_session(model_choice, thinking_on):
-    """
-    Opretter en ny AliPersona og nulstiller chat historik.
-    Kaldes ved model-/thinking-ændring eller "Ny Session"-knap.
 
-    Returns:
-        chat_history, ali_state, stats_text, thinking_text
-    """
-    model_key = MODEL_MAP.get(model_choice, "sonnet")
-    new_ali = create_ali_instance(model_key, thinking_on)
+def _build_client() -> anthropic.Anthropic:
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        raise ValueError("Missing ANTHROPIC_API_KEY. Add it in HF Space Secrets or local .env.")
+    return anthropic.Anthropic(api_key=api_key)
 
-    if new_ali is None:
-        stats_text = (
-            "**FEJL:** `ANTHROPIC_API_KEY` mangler. "
-            "Sæt den som HuggingFace Secret i Space-indstillingerne."
+
+def _messages_for_api(turns: list[dict]) -> list[dict]:
+    msgs = []
+    for t in turns:
+        role = "assistant" if t["role"] == "assistant" else "user"
+        msgs.append({"role": role, "content": t["content"]})
+    return msgs
+
+
+def start_session(persona_name: str, learning_goal: str, difficulty: int):
+    persona_text = load_persona_markdown(PERSONA_FILES[persona_name])
+    state = PersonaState()
+    state.difficulty = difficulty
+
+    session = {
+        "id": datetime.utcnow().strftime("%Y%m%d_%H%M%S"),
+        "persona_name": persona_name,
+        "learning_goal": learning_goal,
+        "difficulty": difficulty,
+        "persona_text": persona_text,
+        "turns": [],
+        "state_history": [state.to_dict()],
+        "started_at": datetime.utcnow().isoformat(),
+    }
+
+    status = (
+        f"Session started | Persona: {persona_name} | Goal: {learning_goal} | Difficulty: {difficulty}"
+    )
+    return session, [], status, state.to_panel_text()
+
+
+def chat_turn(user_text: str, session: dict, chat_history: list):
+    if not session:
+        return "Start en session foerst.", session, chat_history, "Session not started.", ""
+
+    if not user_text.strip():
+        return "", session, chat_history, "Tom besked ignoreret.", ""
+
+    try:
+        client = _build_client()
+    except Exception as e:
+        return "", session, chat_history, f"Config error: {e}", ""
+
+    current_state = PersonaState.from_dict(session["state_history"][-1])
+    system_prompt = build_system_prompt(
+        persona_name=session["persona_name"],
+        persona_markdown=session["persona_text"],
+        learning_goal=session["learning_goal"],
+        difficulty=session["difficulty"],
+        state=current_state,
+    )
+
+    session["turns"].append({"role": "user", "content": user_text})
+
+    try:
+        response = client.messages.create(
+            model="claude-sonnet-4-5-20250929",
+            max_tokens=500,
+            system=system_prompt,
+            messages=_messages_for_api(session["turns"]),
         )
-    else:
-        stats_text = "_Ny session startet. Ingen interaktioner endnu._"
+        ai_text = ""
+        for block in response.content:
+            if block.type == "text":
+                ai_text += block.text
 
-    return [], new_ali, stats_text, ""
+        session["turns"].append({"role": "assistant", "content": ai_text})
+        updated = update_state_from_turn(current_state, user_text, ai_text, session["learning_goal"])
+        session["state_history"].append(updated.to_dict())
 
-
-def trigger_analysis(ali_state):
-    """
-    Kører analyze_student_approach() — ekstra API-kald, kun på brugerens anmodning.
-    """
-    if ali_state is None:
-        return "FEJL: Ingen aktiv session."
-
-    interactions = ali_state.session_stats.get("interactions", [])
-    if not interactions:
-        return "Der er ingen interaktioner at analysere endnu. Skriv til Ali først."
-
-    return ali_state.analyze_student_approach()
+        chat_history = chat_history + [{"role": "user", "content": user_text}, {"role": "assistant", "content": ai_text}]
+        status = f"Turns: {len(session['turns']) // 2}"
+        return "", session, chat_history, status, updated.to_panel_text()
+    except Exception as e:
+        return "", session, chat_history, f"API error: {e}", current_state.to_panel_text()
 
 
-# ---------------------------------------------------------------------------
-# Gradio UI
-# ---------------------------------------------------------------------------
+def end_session(session: dict):
+    if not session:
+        return "No active session.", ""
 
-NO_API_KEY_WARNING = """\
-> **ADVARSEL:** `ANTHROPIC_API_KEY` er ikke konfigureret som HuggingFace Secret.
-> Applikationen kan ikke kommunikere med Ali uden en gyldig API-nøgle.
-> Gå til **Settings → Variables and secrets** og tilføj nøglen.
-"""
-
-INTRO_TEXT = """\
-# Ali Træningssystem
-
-**Velkommen til Ali-træningssystemet.**
-
-Ali er en 19-årig fra Tingbjerg/Nørrebro i København. Du er pædagogstuderende
-og møder Ali for første gang på et ungdomscenter.
-
-*Ali står ved vinduet og kigger ud. Hun har ikke set dig endnu.*
-
-Vælg model og indstillinger nedenfor, og start samtalen.
-"""
+    session["ended_at"] = datetime.utcnow().isoformat()
+    path = save_session_log(session)
+    feedback = build_end_feedback(
+        turns=session["turns"],
+        learning_goal=session["learning_goal"],
+        state_history=session["state_history"],
+    )
+    return feedback, f"Saved log: {path}"
 
 
-def build_interface() -> gr.Blocks:
-    api_key_present = check_api_key()
+def build_ui():
+    with gr.Blocks(title="Persona Trainer v1") as demo:
+        gr.Markdown("# Persona Trainer v1 (Gradio + Anthropic)")
 
-    with gr.Blocks(
-        title="Ali Træningssystem",
-        theme=gr.themes.Soft(),
-    ) as demo:
-
-        ali_state = gr.State(value=None)
-
-        gr.Markdown(INTRO_TEXT)
-
-        if not api_key_present:
-            gr.Markdown(NO_API_KEY_WARNING)
-
-        # Settings row
         with gr.Row():
-            model_dropdown = gr.Dropdown(
-                choices=list(MODEL_MAP.keys()),
-                value="Sonnet 4.5 (hurtig, anbefalet)",
-                label="AI Model",
-                info="Sonnet er hurtigere og billigere. Opus giver bedste kvalitet.",
-                scale=2,
-            )
-            thinking_checkbox = gr.Checkbox(
-                value=True,
-                label="Extended Thinking",
-                info="Ali tænker grundigt før hun svarer (anbefalet, men langsommere)",
-                scale=1,
-            )
-            show_thinking_checkbox = gr.Checkbox(
-                value=False,
-                label="Vis tankeproces",
-                info="Vis hvad Ali tænker internt (pædagogisk indsigt)",
-                scale=1,
-            )
+            persona = gr.Dropdown(choices=list(PERSONA_FILES.keys()), value="Ali", label="Persona")
+            learning_goal = gr.Dropdown(choices=LEARNING_GOALS, value="Alliance", label="Laeringsmaal")
+            difficulty = gr.Slider(1, 3, value=2, step=1, label="Svaerhedsgrad")
 
-        # Main layout
+        start_btn = gr.Button("Start Session")
+
+        chatbot = gr.Chatbot(type="messages", height=420, label="Samtale")
+        user_input = gr.Textbox(label="Din besked", placeholder="Skriv til personaen...")
+
         with gr.Row():
+            send_btn = gr.Button("Send")
+            end_btn = gr.Button("Afslut + Feedback")
 
-            # Left: chat
-            with gr.Column(scale=3):
-                chatbot = gr.Chatbot(
-                    label="Samtale med Ali",
-                    height=500,
-                    show_copy_button=True,
-                    bubble_full_width=False,
-                )
+        status = gr.Textbox(label="Status", interactive=False)
+        state_panel = gr.Textbox(label="Persona State", lines=6, interactive=False)
+        feedback = gr.Textbox(label="Slutfeedback", lines=8, interactive=False)
 
-                with gr.Row():
-                    msg_input = gr.Textbox(
-                        placeholder="Skriv din besked til Ali her...",
-                        lines=2,
-                        scale=4,
-                        show_label=False,
-                    )
-                    send_btn = gr.Button("Send", variant="primary", scale=1)
+        session_state = gr.State(value={})
 
-                with gr.Accordion("Ali's tankeproces", open=False):
-                    thinking_display = gr.Textbox(
-                        label="Hvad Ali tænkte inden svaret",
-                        lines=6,
-                        interactive=False,
-                        placeholder="(Ingen tankeproces at vise endnu — aktiver 'Vis tankeproces' ovenfor)",
-                    )
-
-            # Right: stats + actions
-            with gr.Column(scale=1):
-                stats_display = gr.Markdown(
-                    value="_Ingen interaktioner endnu._",
-                )
-
-                gr.Markdown("---")
-
-                new_session_btn = gr.Button("Ny Session", variant="secondary")
-                gr.Markdown("_Nulstiller samtalen og starter forfra._")
-
-                gr.Markdown("---")
-
-                analyze_btn = gr.Button(
-                    "Analyser min kommunikation", variant="secondary"
-                )
-                gr.Markdown(
-                    "_Giver feedback på din kommunikationsstrategi "
-                    "(bruger et ekstra API-kald)._"
-                )
-
-                analysis_display = gr.Textbox(
-                    label="Feedback",
-                    lines=10,
-                    interactive=False,
-                    placeholder="Klik 'Analyser' for at få feedback på din samtale.",
-                )
-
-        # Event wiring
-
-        def on_load(model_choice, thinking_on):
-            _, new_ali, stats, _ = reset_session(model_choice, thinking_on)
-            return new_ali, stats
-
-        demo.load(
-            fn=on_load,
-            inputs=[model_dropdown, thinking_checkbox],
-            outputs=[ali_state, stats_display],
+        start_btn.click(
+            fn=start_session,
+            inputs=[persona, learning_goal, difficulty],
+            outputs=[session_state, chatbot, status, state_panel],
         )
 
         send_btn.click(
-            fn=respond,
-            inputs=[msg_input, chatbot, ali_state, show_thinking_checkbox],
-            outputs=[chatbot, thinking_display, stats_display],
-        ).then(fn=lambda: "", inputs=None, outputs=[msg_input])
-
-        msg_input.submit(
-            fn=respond,
-            inputs=[msg_input, chatbot, ali_state, show_thinking_checkbox],
-            outputs=[chatbot, thinking_display, stats_display],
-        ).then(fn=lambda: "", inputs=None, outputs=[msg_input])
-
-        model_dropdown.change(
-            fn=reset_session,
-            inputs=[model_dropdown, thinking_checkbox],
-            outputs=[chatbot, ali_state, stats_display, thinking_display],
+            fn=chat_turn,
+            inputs=[user_input, session_state, chatbot],
+            outputs=[user_input, session_state, chatbot, status, state_panel],
         )
 
-        thinking_checkbox.change(
-            fn=reset_session,
-            inputs=[model_dropdown, thinking_checkbox],
-            outputs=[chatbot, ali_state, stats_display, thinking_display],
+        user_input.submit(
+            fn=chat_turn,
+            inputs=[user_input, session_state, chatbot],
+            outputs=[user_input, session_state, chatbot, status, state_panel],
         )
 
-        new_session_btn.click(
-            fn=reset_session,
-            inputs=[model_dropdown, thinking_checkbox],
-            outputs=[chatbot, ali_state, stats_display, thinking_display],
-        )
-
-        analyze_btn.click(
-            fn=trigger_analysis,
-            inputs=[ali_state],
-            outputs=[analysis_display],
+        end_btn.click(
+            fn=end_session,
+            inputs=[session_state],
+            outputs=[feedback, status],
         )
 
     return demo
 
 
 if __name__ == "__main__":
-    interface = build_interface()
-    interface.launch(
-        server_name="0.0.0.0",
-        server_port=7860,
-        share=False,
-    )
+    app = build_ui()
+    app.launch(server_name="0.0.0.0", server_port=7860)
