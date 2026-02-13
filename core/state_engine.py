@@ -34,7 +34,7 @@ class PersonaState:
             f"Trust: {self.trust}\n"
             f"Stress: {self.stress}\n"
             f"Skam: {self.shame}\n"
-            f"Haab: {self.hope}\n"
+            f"Håb: {self.hope}\n"
             f"Kontroltab: {self.control_loss}"
         )
 
@@ -43,8 +43,8 @@ def update_state_from_turn(state: PersonaState, user_text: str, ai_text: str, le
     s = PersonaState.from_dict(state.to_dict())
     text = user_text.lower()
 
-    validating_words = ["forstaar", "giver mening", "hoerer", "tak", "valgmulighed", "hvad taenker du"]
-    pressure_words = ["skal", "burde", "konsekvens", "sanktion", "nu goer du"]
+    validating_words = ["forstår", "giver mening", "hører", "tak", "valgmulighed", "hvad tænker du"]
+    pressure_words = ["skal", "burde", "konsekvens", "sanktion", "nu gør du"]
 
     if any(w in text for w in validating_words):
         s.trust += 4
@@ -62,7 +62,7 @@ def update_state_from_turn(state: PersonaState, user_text: str, ai_text: str, le
         s.stress -= 2
         s.trust += 2
 
-    if learning_goal == "Graensesaetning" and "ramme" in text:
+    if learning_goal == "Grænsesætning" and "ramme" in text:
         s.control_loss -= 2
 
     # Difficulty shifts baseline resistance.

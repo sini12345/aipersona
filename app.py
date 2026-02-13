@@ -21,14 +21,14 @@ PERSONA_FILES = {
 LEARNING_GOALS = [
     "Alliance",
     "Deeskalering",
-    "Graensesaetning",
+    "Grænsesætning",
 ]
 
 
 def _build_client() -> anthropic.Anthropic:
     api_key = os.getenv("ANTHROPIC_API_KEY", "")
     if not api_key:
-        raise ValueError("Mangler ANTHROPIC_API_KEY. Tilfoej den i HF Space Secrets eller lokal .env.")
+        raise ValueError("Mangler ANTHROPIC_API_KEY. Tilføj den i HF Space Secrets eller lokal .env.")
     return anthropic.Anthropic(api_key=api_key)
 
 
@@ -47,7 +47,7 @@ def _default_scenario_label(persona_name: str) -> str:
 
 def _format_state_panel(state: PersonaState, blind_mode: bool, reveal: bool = False) -> str:
     if blind_mode and not reveal:
-        return "Blind mode aktiv: state vises foerst ved session-afslutning."
+        return "Blind mode aktiv: state vises først ved session-afslutning."
     return state.to_panel_text()
 
 
@@ -124,9 +124,9 @@ def start_session(
     status = (
         "Session startet | "
         f"Persona: {persona_name} | "
-        f"Scenario: {selected_label} | "
-        f"Laeringsmaal: {learning_goal} | "
-        f"Svaerhedsgrad: {difficulty}"
+        f"Scenarie: {selected_label} | "
+        f"Læringsmål: {learning_goal} | "
+        f"Sværhedsgrad: {difficulty}"
     )
 
     return (
@@ -142,7 +142,7 @@ def start_session(
 
 def chat_turn(user_text: str, session: dict, chat_history: list):
     if not session:
-        return "Start en session foerst.", session, chat_history, "Session ikke startet.", "", "Twist: -", "Ingen aktiv session."
+        return "Start en session først.", session, chat_history, "Session ikke startet.", "", "Twist: -", "Ingen aktiv session."
 
     blind_mode = bool(session.get("blind_mode", False))
 
@@ -166,7 +166,7 @@ def chat_turn(user_text: str, session: dict, chat_history: list):
                 "",
                 session,
                 chat_history,
-                "Speed round er faerdig. Klik 'Afslut + Feedback'.",
+                "Speed round er færdig. Klik 'Afslut + Feedback'.",
                 _format_state_panel(current_state, blind_mode=blind_mode, reveal=False),
                 f"Twist: {session.get('active_twist', '-')}",
                 _round_status(session),
@@ -237,7 +237,7 @@ def chat_turn(user_text: str, session: dict, chat_history: list):
         if session.get("speed_round_enabled", False):
             max_turns = session.get("speed_round_max_turns", 6)
             if session["turn_count"] >= max_turns:
-                status += " | Speed round faerdig - klik 'Afslut + Feedback'."
+                status += " | Speed round færdig - klik 'Afslut + Feedback'."
 
         return (
             "",
@@ -285,7 +285,7 @@ def end_session(session: dict):
 
     status = f"Log gemt: {path}"
     if session.get("speed_round_enabled", False):
-        status += f" | Speed round faerdig: {session.get('turn_count', 0)}/{session.get('speed_round_max_turns', 6)}"
+        status += f" | Speed round færdig: {session.get('turn_count', 0)}/{session.get('speed_round_max_turns', 6)}"
 
     return feedback, status, final_state_text, _round_status(session)
 
@@ -299,10 +299,10 @@ def build_ui():
             scenario = gr.Dropdown(
                 choices=get_scenario_labels("Ali"),
                 value=_default_scenario_label("Ali"),
-                label="Scenario",
+                label="Scenarie",
             )
-            learning_goal = gr.Dropdown(choices=LEARNING_GOALS, value="Alliance", label="Laeringsmaal")
-            difficulty = gr.Slider(1, 3, value=2, step=1, label="Svaerhedsgrad")
+            learning_goal = gr.Dropdown(choices=LEARNING_GOALS, value="Alliance", label="Læringsmål")
+            difficulty = gr.Slider(1, 3, value=2, step=1, label="Sværhedsgrad")
 
         with gr.Row():
             twist_enabled = gr.Checkbox(value=True, label="Twist-kort")
@@ -326,7 +326,7 @@ def build_ui():
 
         status = gr.Textbox(label="Status", interactive=False)
         round_status = gr.Textbox(label="Runde-status", interactive=False)
-        state_panel = gr.Textbox(label="Persona-state", lines=6, interactive=False)
+        state_panel = gr.Textbox(label="Persona-tilstand", lines=6, interactive=False)
         feedback = gr.Textbox(label="Slutfeedback", lines=10, interactive=False)
 
         session_state = gr.State(value={})
