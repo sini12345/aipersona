@@ -293,22 +293,77 @@ def end_session(session: dict):
 def build_ui():
     with gr.Blocks(title="Persona Trainer v1.6") as demo:
         gr.Markdown("# Persona Trainer v1.6 (Gradio + Anthropic)")
+        with gr.Accordion("Hjælp til valg", open=False):
+            gr.Markdown(
+                """
+**Persona:** Hvem du træner samtale med. Vælg den profil, der passer til dit læringsfokus.
+
+**Scenarie:** Den konkrete situation I mødes i. Scenariet styrer kontekst og starttilstand.
+
+**Læringsmål:** Hvad du træner i denne session (`Alliance`, `Deeskalering`, `Grænsesætning`).
+
+**Sværhedsgrad:** Hvor meget modstand du typisk møder. 1 = mild modstand, 3 = høj modstand.
+
+**Twist-kort:** Indfører uventede hændelser under samtalen (typisk tur 3 og 6).
+
+**Blind mode:** Skjuler persona-tilstand under samtalen. Tilstanden vises først ved afslutning/debrief.
+
+**Speed round:** Gør samtalen kort og intensiv med et maksimum antal ture.
+                """.strip()
+            )
 
         with gr.Row():
-            persona = gr.Dropdown(choices=list(PERSONA_FILES.keys()), value="Ali", label="Persona")
+            persona = gr.Dropdown(
+                choices=list(PERSONA_FILES.keys()),
+                value="Ali",
+                label="Persona",
+                info="Vælg hvilken karakter du vil træne med.",
+            )
             scenario = gr.Dropdown(
                 choices=get_scenario_labels("Ali"),
                 value=_default_scenario_label("Ali"),
                 label="Scenarie",
+                info="Vælg den konkrete situation for samtalen.",
             )
-            learning_goal = gr.Dropdown(choices=LEARNING_GOALS, value="Alliance", label="Læringsmål")
-            difficulty = gr.Slider(1, 3, value=2, step=1, label="Sværhedsgrad")
+            learning_goal = gr.Dropdown(
+                choices=LEARNING_GOALS,
+                value="Alliance",
+                label="Læringsmål",
+                info="Vælg hvilket kommunikativt mål du vil fokusere på.",
+            )
+            difficulty = gr.Slider(
+                1,
+                3,
+                value=2,
+                step=1,
+                label="Sværhedsgrad",
+                info="1 = lav modstand, 3 = høj modstand.",
+            )
 
         with gr.Row():
-            twist_enabled = gr.Checkbox(value=True, label="Twist-kort")
-            blind_mode = gr.Checkbox(value=False, label="Blind mode")
-            speed_round_enabled = gr.Checkbox(value=False, label="Speed round")
-            speed_round_max_turns = gr.Slider(4, 12, value=6, step=1, label="Maks ture (speed)")
+            twist_enabled = gr.Checkbox(
+                value=True,
+                label="Twist-kort",
+                info="Slå til for uventede hændelser under samtalen.",
+            )
+            blind_mode = gr.Checkbox(
+                value=False,
+                label="Blind mode (skjuler tilstand under samtalen)",
+                info="Du ser ikke trust/stress/skam/håb før debrief.",
+            )
+            speed_round_enabled = gr.Checkbox(
+                value=False,
+                label="Speed round (kort træning)",
+                info="Afsluttes automatisk efter valgt antal ture.",
+            )
+            speed_round_max_turns = gr.Slider(
+                4,
+                12,
+                value=6,
+                step=1,
+                label="Maks ture (speed)",
+                info="Gælder kun når speed round er slået til.",
+            )
 
         scenario_brief = gr.Markdown(
             value=format_scenario_brief("Ali", get_scenario("Ali", _default_scenario_label("Ali")))
