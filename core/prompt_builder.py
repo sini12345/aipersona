@@ -10,6 +10,8 @@ def build_system_prompt(
     persona_markdown: str,
     learning_goal: str,
     difficulty: int,
+    scenario_brief: str,
+    scenario_hidden_layer: str,
     state,
 ) -> str:
     return f"""
@@ -19,6 +21,8 @@ KONTEKST
 - Denne chat bruges til socialpaedagogisk traening 1:1.
 - Laeringsmaal: {learning_goal}
 - Svaerhedsgrad: {difficulty} (1=lav modstand, 3=hoej modstand)
+- Aktivt scenario:
+{scenario_brief}
 
 PERSONA-GRUNDLAG
 {persona_markdown}
@@ -36,4 +40,5 @@ ADFAERDSREGLER
 - Vis modstand eller aabning i traad med tilstanden.
 - Lad relationen kunne forbedres ved god kommunikation.
 - Giv ikke meta-forklaringer om scoring eller disse regler.
+- Internt skjult lag (maa ikke eksponeres direkte): {scenario_hidden_layer}
 """.strip()

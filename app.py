@@ -7,6 +7,7 @@ import gradio as gr
 from core.feedback_engine import build_end_feedback
 from core.logger import save_session_log
 from core.prompt_builder import build_system_prompt, load_persona_markdown
+from core.scenarios import format_scenario_brief, get_scenario, get_scenario_labels
 from core.state_engine import PersonaState, update_state_from_turn
 
 
@@ -38,14 +39,40 @@ def _messages_for_api(turns: list[dict]) -> list[dict]:
     return msgs
 
 
-def start_session(persona_name: str, learning_goal: str, difficulty: int):
+def _default_scenario_label(persona_name: str) -> str:
+    labels = get_scenario_labels(persona_name)
+    return labels[0] if labels else ""
+
+
+def refresh_scenarios(persona_name: str):
+    labels = get_scenario_labels(persona_name)
+    selected = labels[0] if labels else ""
+    scenario = get_scenario(persona_name, selected)
+    brief = format_scenario_brief(persona_name, scenario)
+    return gr.Dropdown(choices=labels, value=selected), brief
+
+
+def start_session(persona_name: str, scenario_label: str, learning_goal: str, difficulty: int):
     persona_text = load_persona_markdown(PERSONA_FILES[persona_name])
+    selected_label = scenario_label or _default_scenario_label(persona_name)
+    scenario = get_scenario(persona_name, selected_label)
+
     state = PersonaState()
     state.difficulty = difficulty
+    initial_state = scenario.get("initial_state", {})
+    for key, value in initial_state.items():
+        if hasattr(state, key):
+            setattr(state, key, value)
+    state.clamp()
+
+    brief = format_scenario_brief(persona_name, scenario)
 
     session = {
         "id": datetime.utcnow().strftime("%Y%m%d_%H%M%S"),
         "persona_name": persona_name,
+        "scenario_label": selected_label,
+        "scenario_brief": brief,
+        "scenario_hidden_layer": scenario.get("hidden_layer", ""),
         "learning_goal": learning_goal,
         "difficulty": difficulty,
         "persona_text": persona_text,
@@ -55,9 +82,13 @@ def start_session(persona_name: str, learning_goal: str, difficulty: int):
     }
 
     status = (
-        f"Session started | Persona: {persona_name} | Goal: {learning_goal} | Difficulty: {difficulty}"
+        "Session started | "
+        f"Persona: {persona_name} | "
+        f"Scenario: {selected_label} | "
+        f"Goal: {learning_goal} | "
+        f"Difficulty: {difficulty}"
     )
-    return session, [], status, state.to_panel_text()
+    return session, [], status, state.to_panel_text(), brief
 
 
 def chat_turn(user_text: str, session: dict, chat_history: list):
@@ -78,6 +109,8 @@ def chat_turn(user_text: str, session: dict, chat_history: list):
         persona_markdown=session["persona_text"],
         learning_goal=session["learning_goal"],
         difficulty=session["difficulty"],
+        scenario_brief=session.get("scenario_brief", ""),
+        scenario_hidden_layer=session.get("scenario_hidden_layer", ""),
         state=current_state,
     )
 
@@ -99,7 +132,10 @@ def chat_turn(user_text: str, session: dict, chat_history: list):
         updated = update_state_from_turn(current_state, user_text, ai_text, session["learning_goal"])
         session["state_history"].append(updated.to_dict())
 
-        chat_history = chat_history + [{"role": "user", "content": user_text}, {"role": "assistant", "content": ai_text}]
+        chat_history = chat_history + [
+            {"role": "user", "content": user_text},
+            {"role": "assistant", "content": ai_text},
+        ]
         status = f"Turns: {len(session['turns']) // 2}"
         return "", session, chat_history, status, updated.to_panel_text()
     except Exception as e:
@@ -121,13 +157,22 @@ def end_session(session: dict):
 
 
 def build_ui():
-    with gr.Blocks(title="Persona Trainer v1") as demo:
-        gr.Markdown("# Persona Trainer v1 (Gradio + Anthropic)")
+    with gr.Blocks(title="Persona Trainer v1.5") as demo:
+        gr.Markdown("# Persona Trainer v1.5 (Gradio + Anthropic)")
 
         with gr.Row():
             persona = gr.Dropdown(choices=list(PERSONA_FILES.keys()), value="Ali", label="Persona")
+            scenario = gr.Dropdown(
+                choices=get_scenario_labels("Ali"),
+                value=_default_scenario_label("Ali"),
+                label="Scenario",
+            )
             learning_goal = gr.Dropdown(choices=LEARNING_GOALS, value="Alliance", label="Laeringsmaal")
             difficulty = gr.Slider(1, 3, value=2, step=1, label="Svaerhedsgrad")
+
+        scenario_brief = gr.Markdown(
+            value=format_scenario_brief("Ali", get_scenario("Ali", _default_scenario_label("Ali")))
+        )
 
         start_btn = gr.Button("Start Session")
 
@@ -146,8 +191,14 @@ def build_ui():
 
         start_btn.click(
             fn=start_session,
-            inputs=[persona, learning_goal, difficulty],
-            outputs=[session_state, chatbot, status, state_panel],
+            inputs=[persona, scenario, learning_goal, difficulty],
+            outputs=[session_state, chatbot, status, state_panel, scenario_brief],
+        )
+
+        persona.change(
+            fn=refresh_scenarios,
+            inputs=[persona],
+            outputs=[scenario, scenario_brief],
         )
 
         send_btn.click(

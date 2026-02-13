@@ -9,12 +9,14 @@ app_file: app.py
 pinned: false
 ---
 
-# Persona Trainer v1 (Gradio + Hugging Face + GitHub)
+# Persona Trainer v1.5 (Gradio + Hugging Face + GitHub)
 
 HF-ready prototype for socialpaedagogisk samtaletraening med flere personaer (`Ali`, `Sofie`, `Mika`).
 
 ## Features i v1
 - Persona-vaelger
+- Scenario-vaelger per persona
+- Scenario Brief med kort forhistorie, dagens maal, triggere og skjult lag
 - Laeringsmaal-mode (`Alliance`, `Deeskalering`, `Graensesaetning`)
 - Trust/state-panel (`trust`, `stress`, `skam`, `haab`, `kontroltab`)
 - Samtalelogging til `data/logs/*.json`
@@ -24,6 +26,7 @@ HF-ready prototype for socialpaedagogisk samtaletraening med flere personaer (`A
 ```text
 app.py
 core/
+  scenarios.py
   prompt_builder.py
   state_engine.py
   feedback_engine.py
@@ -56,7 +59,7 @@ python app.py
 - `app.py` er entrypoint for HF Gradio Space.
 - Hvis du vil, kan du senere splitte prompt/state i mere avancerede engines uden at aendre UI-kontrakten.
 
-## Naeste naturlige v1.5
+## Naeste naturlige v2
 - Event-kort midt i samtale
 - Svaerhedsprofiler per persona
 - Mikro-feedback hver 3-4 tur
