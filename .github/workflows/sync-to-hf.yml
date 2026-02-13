@@ -14,8 +14,10 @@ jobs:
           lfs: true
 
       - name: Push to HuggingFace
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
-          git remote add hf https://sini12345:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/sini12345/aipersona
+          git remote add hf https://user:${HF_TOKEN}@huggingface.co/spaces/sini12345/aipersona
           git push hf main --force
