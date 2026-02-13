@@ -28,7 +28,7 @@ LEARNING_GOALS = [
 def _build_client() -> anthropic.Anthropic:
     api_key = os.getenv("ANTHROPIC_API_KEY", "")
     if not api_key:
-        raise ValueError("Missing ANTHROPIC_API_KEY. Add it in HF Space Secrets or local .env.")
+        raise ValueError("Mangler ANTHROPIC_API_KEY. Tilfoej den i HF Space Secrets eller lokal .env.")
     return anthropic.Anthropic(api_key=api_key)
 
 
@@ -55,10 +55,10 @@ def _round_status(session: dict) -> str:
     if not session:
         return "Ingen aktiv session."
     if not session.get("speed_round_enabled", False):
-        return f"Normal mode | Turns: {session.get('turn_count', 0)}"
+        return f"Normal mode | Ture: {session.get('turn_count', 0)}"
     max_turns = session.get("speed_round_max_turns", 6)
     turn_count = session.get("turn_count", 0)
-    return f"Speed round: {turn_count}/{max_turns} turns"
+    return f"Speed round: {turn_count}/{max_turns} ture"
 
 
 def refresh_scenarios(persona_name: str):
@@ -122,11 +122,11 @@ def start_session(
     }
 
     status = (
-        "Session started | "
+        "Session startet | "
         f"Persona: {persona_name} | "
         f"Scenario: {selected_label} | "
-        f"Goal: {learning_goal} | "
-        f"Difficulty: {difficulty}"
+        f"Laeringsmaal: {learning_goal} | "
+        f"Svaerhedsgrad: {difficulty}"
     )
 
     return (
@@ -142,7 +142,7 @@ def start_session(
 
 def chat_turn(user_text: str, session: dict, chat_history: list):
     if not session:
-        return "Start en session foerst.", session, chat_history, "Session not started.", "", "Twist: -", "Ingen aktiv session."
+        return "Start en session foerst.", session, chat_history, "Session ikke startet.", "", "Twist: -", "Ingen aktiv session."
 
     blind_mode = bool(session.get("blind_mode", False))
 
@@ -175,7 +175,7 @@ def chat_turn(user_text: str, session: dict, chat_history: list):
     try:
         client = _build_client()
     except Exception as e:
-        return "", session, chat_history, f"Config error: {e}", "", "Twist: -", _round_status(session)
+        return "", session, chat_history, f"Konfigurationsfejl: {e}", "", "Twist: -", _round_status(session)
 
     current_state = PersonaState.from_dict(session["state_history"][-1])
     system_prompt = build_system_prompt(
@@ -233,11 +233,11 @@ def chat_turn(user_text: str, session: dict, chat_history: list):
             {"role": "assistant", "content": ai_text},
         ]
 
-        status = f"Turns: {session['turn_count']}"
+        status = f"Ture: {session['turn_count']}"
         if session.get("speed_round_enabled", False):
             max_turns = session.get("speed_round_max_turns", 6)
             if session["turn_count"] >= max_turns:
-                status += " | Speed round complete - klik 'Afslut + Feedback'."
+                status += " | Speed round faerdig - klik 'Afslut + Feedback'."
 
         return (
             "",
@@ -253,7 +253,7 @@ def chat_turn(user_text: str, session: dict, chat_history: list):
             "",
             session,
             chat_history,
-            f"API error: {e}",
+            f"API-fejl: {e}",
             _format_state_panel(current_state, blind_mode=blind_mode, reveal=False),
             f"Twist: {session.get('active_twist', '-')}",
             _round_status(session),
@@ -262,7 +262,7 @@ def chat_turn(user_text: str, session: dict, chat_history: list):
 
 def end_session(session: dict):
     if not session:
-        return "No active session.", "", "", "Ingen aktiv session."
+        return "Ingen aktiv session.", "", "", "Ingen aktiv session."
 
     session["ended_at"] = datetime.utcnow().isoformat()
     path = save_session_log(session)
@@ -283,9 +283,9 @@ def end_session(session: dict):
     final_state = PersonaState.from_dict(session["state_history"][-1])
     final_state_text = _format_state_panel(final_state, blind_mode=False, reveal=True)
 
-    status = f"Saved log: {path}"
+    status = f"Log gemt: {path}"
     if session.get("speed_round_enabled", False):
-        status += f" | Speed round done: {session.get('turn_count', 0)}/{session.get('speed_round_max_turns', 6)}"
+        status += f" | Speed round faerdig: {session.get('turn_count', 0)}/{session.get('speed_round_max_turns', 6)}"
 
     return feedback, status, final_state_text, _round_status(session)
 
@@ -308,14 +308,14 @@ def build_ui():
             twist_enabled = gr.Checkbox(value=True, label="Twist-kort")
             blind_mode = gr.Checkbox(value=False, label="Blind mode")
             speed_round_enabled = gr.Checkbox(value=False, label="Speed round")
-            speed_round_max_turns = gr.Slider(4, 12, value=6, step=1, label="Speed max turns")
+            speed_round_max_turns = gr.Slider(4, 12, value=6, step=1, label="Maks ture (speed)")
 
         scenario_brief = gr.Markdown(
             value=format_scenario_brief("Ali", get_scenario("Ali", _default_scenario_label("Ali")))
         )
         twist_panel = gr.Markdown(value="Twist: Ingen aktiv twist endnu.")
 
-        start_btn = gr.Button("Start Session")
+        start_btn = gr.Button("Start session")
 
         chatbot = gr.Chatbot(type="messages", height=420, label="Samtale")
         user_input = gr.Textbox(label="Din besked", placeholder="Skriv til personaen...")
@@ -325,8 +325,8 @@ def build_ui():
             end_btn = gr.Button("Afslut + Feedback")
 
         status = gr.Textbox(label="Status", interactive=False)
-        round_status = gr.Textbox(label="Round Status", interactive=False)
-        state_panel = gr.Textbox(label="Persona State", lines=6, interactive=False)
+        round_status = gr.Textbox(label="Runde-status", interactive=False)
+        state_panel = gr.Textbox(label="Persona-state", lines=6, interactive=False)
         feedback = gr.Textbox(label="Slutfeedback", lines=10, interactive=False)
 
         session_state = gr.State(value={})
