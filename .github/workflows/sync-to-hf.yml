@@ -1,0 +1,21 @@
+name: Sync to HuggingFace Spaces
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push to HuggingFace
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git remote add hf https://sini12345:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/sini12345/aipersona
+          git push hf main --force
