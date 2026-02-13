@@ -9,6 +9,7 @@ from core.logger import save_session_log
 from core.prompt_builder import build_system_prompt, load_persona_markdown
 from core.scenarios import format_scenario_brief, get_scenario, get_scenario_labels
 from core.state_engine import PersonaState, update_state_from_turn
+from core.twist_cards import TWIST_TRIGGER_TURNS, get_twist_card
 
 
 PERSONA_FILES = {
@@ -44,6 +45,22 @@ def _default_scenario_label(persona_name: str) -> str:
     return labels[0] if labels else ""
 
 
+def _format_state_panel(state: PersonaState, blind_mode: bool, reveal: bool = False) -> str:
+    if blind_mode and not reveal:
+        return "Blind mode aktiv: state vises foerst ved session-afslutning."
+    return state.to_panel_text()
+
+
+def _round_status(session: dict) -> str:
+    if not session:
+        return "Ingen aktiv session."
+    if not session.get("speed_round_enabled", False):
+        return f"Normal mode | Turns: {session.get('turn_count', 0)}"
+    max_turns = session.get("speed_round_max_turns", 6)
+    turn_count = session.get("turn_count", 0)
+    return f"Speed round: {turn_count}/{max_turns} turns"
+
+
 def refresh_scenarios(persona_name: str):
     labels = get_scenario_labels(persona_name)
     selected = labels[0] if labels else ""
@@ -58,7 +75,16 @@ def refresh_scenario_brief(persona_name: str, scenario_label: str):
     return format_scenario_brief(persona_name, scenario)
 
 
-def start_session(persona_name: str, scenario_label: str, learning_goal: str, difficulty: int):
+def start_session(
+    persona_name: str,
+    scenario_label: str,
+    learning_goal: str,
+    difficulty: int,
+    twist_enabled: bool,
+    blind_mode: bool,
+    speed_round_enabled: bool,
+    speed_round_max_turns: int,
+):
     persona_text = load_persona_markdown(PERSONA_FILES[persona_name])
     selected_label = scenario_label or _default_scenario_label(persona_name)
     scenario = get_scenario(persona_name, selected_label)
@@ -85,6 +111,14 @@ def start_session(persona_name: str, scenario_label: str, learning_goal: str, di
         "turns": [],
         "state_history": [state.to_dict()],
         "started_at": datetime.utcnow().isoformat(),
+        "twist_enabled": bool(twist_enabled),
+        "blind_mode": bool(blind_mode),
+        "speed_round_enabled": bool(speed_round_enabled),
+        "speed_round_max_turns": int(speed_round_max_turns),
+        "turn_count": 0,
+        "fired_twist_turns": [],
+        "twist_history": [],
+        "active_twist": "Ingen aktiv twist endnu.",
     }
 
     status = (
@@ -94,20 +128,54 @@ def start_session(persona_name: str, scenario_label: str, learning_goal: str, di
         f"Goal: {learning_goal} | "
         f"Difficulty: {difficulty}"
     )
-    return session, [], status, state.to_panel_text(), brief
+
+    return (
+        session,
+        [],
+        status,
+        _format_state_panel(state, blind_mode=bool(blind_mode), reveal=False),
+        brief,
+        f"Twist: {session['active_twist']}",
+        _round_status(session),
+    )
 
 
 def chat_turn(user_text: str, session: dict, chat_history: list):
     if not session:
-        return "Start en session foerst.", session, chat_history, "Session not started.", ""
+        return "Start en session foerst.", session, chat_history, "Session not started.", "", "Twist: -", "Ingen aktiv session."
+
+    blind_mode = bool(session.get("blind_mode", False))
 
     if not user_text.strip():
-        return "", session, chat_history, "Tom besked ignoreret.", ""
+        current_state = PersonaState.from_dict(session["state_history"][-1])
+        return (
+            "",
+            session,
+            chat_history,
+            "Tom besked ignoreret.",
+            _format_state_panel(current_state, blind_mode=blind_mode, reveal=False),
+            f"Twist: {session.get('active_twist', '-')}",
+            _round_status(session),
+        )
+
+    if session.get("speed_round_enabled", False):
+        max_turns = session.get("speed_round_max_turns", 6)
+        if session.get("turn_count", 0) >= max_turns:
+            current_state = PersonaState.from_dict(session["state_history"][-1])
+            return (
+                "",
+                session,
+                chat_history,
+                "Speed round er faerdig. Klik 'Afslut + Feedback'.",
+                _format_state_panel(current_state, blind_mode=blind_mode, reveal=False),
+                f"Twist: {session.get('active_twist', '-')}",
+                _round_status(session),
+            )
 
     try:
         client = _build_client()
     except Exception as e:
-        return "", session, chat_history, f"Config error: {e}", ""
+        return "", session, chat_history, f"Config error: {e}", "", "Twist: -", _round_status(session)
 
     current_state = PersonaState.from_dict(session["state_history"][-1])
     system_prompt = build_system_prompt(
@@ -117,6 +185,7 @@ def chat_turn(user_text: str, session: dict, chat_history: list):
         difficulty=session["difficulty"],
         scenario_brief=session.get("scenario_brief", ""),
         scenario_hidden_layer=session.get("scenario_hidden_layer", ""),
+        active_twist=session.get("active_twist", "Ingen aktiv twist endnu."),
         state=current_state,
     )
 
@@ -129,6 +198,7 @@ def chat_turn(user_text: str, session: dict, chat_history: list):
             system=system_prompt,
             messages=_messages_for_api(session["turns"]),
         )
+
         ai_text = ""
         for block in response.content:
             if block.type == "text":
@@ -136,35 +206,93 @@ def chat_turn(user_text: str, session: dict, chat_history: list):
 
         session["turns"].append({"role": "assistant", "content": ai_text})
         updated = update_state_from_turn(current_state, user_text, ai_text, session["learning_goal"])
+
+        session["turn_count"] = session.get("turn_count", 0) + 1
+        turn_number = session["turn_count"]
+
+        twist_status = f"Twist: {session.get('active_twist', 'Ingen aktiv twist endnu.')}"
+        if session.get("twist_enabled", False):
+            if turn_number in TWIST_TRIGGER_TURNS and turn_number not in session.get("fired_twist_turns", []):
+                twist = get_twist_card(session["persona_name"], turn_number)
+                session["active_twist"] = twist
+                session.setdefault("fired_twist_turns", []).append(turn_number)
+                session.setdefault("twist_history", []).append({"turn": turn_number, "card": twist})
+
+                # Light event impact so twist has gameplay consequence.
+                updated.stress += 4
+                updated.control_loss += 3
+                updated.trust -= 2
+                updated.clamp()
+
+                twist_status = f"Twist (tur {turn_number}): {twist}"
+
         session["state_history"].append(updated.to_dict())
 
         chat_history = chat_history + [
             {"role": "user", "content": user_text},
             {"role": "assistant", "content": ai_text},
         ]
-        status = f"Turns: {len(session['turns']) // 2}"
-        return "", session, chat_history, status, updated.to_panel_text()
+
+        status = f"Turns: {session['turn_count']}"
+        if session.get("speed_round_enabled", False):
+            max_turns = session.get("speed_round_max_turns", 6)
+            if session["turn_count"] >= max_turns:
+                status += " | Speed round complete - klik 'Afslut + Feedback'."
+
+        return (
+            "",
+            session,
+            chat_history,
+            status,
+            _format_state_panel(updated, blind_mode=blind_mode, reveal=False),
+            twist_status,
+            _round_status(session),
+        )
     except Exception as e:
-        return "", session, chat_history, f"API error: {e}", current_state.to_panel_text()
+        return (
+            "",
+            session,
+            chat_history,
+            f"API error: {e}",
+            _format_state_panel(current_state, blind_mode=blind_mode, reveal=False),
+            f"Twist: {session.get('active_twist', '-')}",
+            _round_status(session),
+        )
 
 
 def end_session(session: dict):
     if not session:
-        return "No active session.", ""
+        return "No active session.", "", "", "Ingen aktiv session."
 
     session["ended_at"] = datetime.utcnow().isoformat()
     path = save_session_log(session)
+
     feedback = build_end_feedback(
         turns=session["turns"],
         learning_goal=session["learning_goal"],
         state_history=session["state_history"],
     )
-    return feedback, f"Saved log: {path}"
+
+    twist_history = session.get("twist_history", [])
+    if twist_history:
+        lines = ["", "Twists i sessionen:"]
+        for t in twist_history:
+            lines.append(f"- Tur {t['turn']}: {t['card']}")
+        feedback += "\n" + "\n".join(lines)
+
+    final_state = PersonaState.from_dict(session["state_history"][-1])
+    final_state_text = _format_state_panel(final_state, blind_mode=False, reveal=True)
+
+    status = f"Saved log: {path}"
+    if session.get("speed_round_enabled", False):
+        status += f" | Speed round done: {session.get('turn_count', 0)}/{session.get('speed_round_max_turns', 6)}"
+
+    return feedback, status, final_state_text, _round_status(session)
 
 
 def build_ui():
-    with gr.Blocks(title="Persona Trainer v1.5") as demo:
-        gr.Markdown("# Persona Trainer v1.5 (Gradio + Anthropic)")
+    with gr.Blocks(title="Persona Trainer v1.6") as demo:
+        gr.Markdown("# Persona Trainer v1.6 (Gradio + Anthropic)")
 
         with gr.Row():
             persona = gr.Dropdown(choices=list(PERSONA_FILES.keys()), value="Ali", label="Persona")
@@ -176,9 +304,16 @@ def build_ui():
             learning_goal = gr.Dropdown(choices=LEARNING_GOALS, value="Alliance", label="Laeringsmaal")
             difficulty = gr.Slider(1, 3, value=2, step=1, label="Svaerhedsgrad")
 
+        with gr.Row():
+            twist_enabled = gr.Checkbox(value=True, label="Twist-kort")
+            blind_mode = gr.Checkbox(value=False, label="Blind mode")
+            speed_round_enabled = gr.Checkbox(value=False, label="Speed round")
+            speed_round_max_turns = gr.Slider(4, 12, value=6, step=1, label="Speed max turns")
+
         scenario_brief = gr.Markdown(
             value=format_scenario_brief("Ali", get_scenario("Ali", _default_scenario_label("Ali")))
         )
+        twist_panel = gr.Markdown(value="Twist: Ingen aktiv twist endnu.")
 
         start_btn = gr.Button("Start Session")
 
@@ -190,15 +325,25 @@ def build_ui():
             end_btn = gr.Button("Afslut + Feedback")
 
         status = gr.Textbox(label="Status", interactive=False)
+        round_status = gr.Textbox(label="Round Status", interactive=False)
         state_panel = gr.Textbox(label="Persona State", lines=6, interactive=False)
-        feedback = gr.Textbox(label="Slutfeedback", lines=8, interactive=False)
+        feedback = gr.Textbox(label="Slutfeedback", lines=10, interactive=False)
 
         session_state = gr.State(value={})
 
         start_btn.click(
             fn=start_session,
-            inputs=[persona, scenario, learning_goal, difficulty],
-            outputs=[session_state, chatbot, status, state_panel, scenario_brief],
+            inputs=[
+                persona,
+                scenario,
+                learning_goal,
+                difficulty,
+                twist_enabled,
+                blind_mode,
+                speed_round_enabled,
+                speed_round_max_turns,
+            ],
+            outputs=[session_state, chatbot, status, state_panel, scenario_brief, twist_panel, round_status],
         )
 
         persona.change(
@@ -216,19 +361,19 @@ def build_ui():
         send_btn.click(
             fn=chat_turn,
             inputs=[user_input, session_state, chatbot],
-            outputs=[user_input, session_state, chatbot, status, state_panel],
+            outputs=[user_input, session_state, chatbot, status, state_panel, twist_panel, round_status],
         )
 
         user_input.submit(
             fn=chat_turn,
             inputs=[user_input, session_state, chatbot],
-            outputs=[user_input, session_state, chatbot, status, state_panel],
+            outputs=[user_input, session_state, chatbot, status, state_panel, twist_panel, round_status],
         )
 
         end_btn.click(
             fn=end_session,
             inputs=[session_state],
-            outputs=[feedback, status],
+            outputs=[feedback, status, state_panel, round_status],
         )
 
     return demo

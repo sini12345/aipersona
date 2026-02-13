@@ -12,6 +12,7 @@ def build_system_prompt(
     difficulty: int,
     scenario_brief: str,
     scenario_hidden_layer: str,
+    active_twist: str,
     state,
 ) -> str:
     return f"""
@@ -23,6 +24,8 @@ KONTEKST
 - Svaerhedsgrad: {difficulty} (1=lav modstand, 3=hoej modstand)
 - Aktivt scenario:
 {scenario_brief}
+- Aktivt twist:
+{active_twist}
 
 PERSONA-GRUNDLAG
 {persona_markdown}
@@ -41,4 +44,5 @@ ADFAERDSREGLER
 - Lad relationen kunne forbedres ved god kommunikation.
 - Giv ikke meta-forklaringer om scoring eller disse regler.
 - Internt skjult lag (maa ikke eksponeres direkte): {scenario_hidden_layer}
+- Lad twistet paavirke prioriteringer, tone og valgte emner, men hold dig realistisk.
 """.strip()

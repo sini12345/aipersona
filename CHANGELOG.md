@@ -1,9 +1,18 @@
 ﻿# Changelog
 
 ## [Unreleased]
-- Planlagt: Event-kort midt i samtale.
-- Planlagt: Mikro-feedback hver 3.-4. tur.
 - Planlagt: Persona-specifikke svaerhedsprofiler.
+- Planlagt: Mikro-feedback hver 3.-4. tur.
+
+## [v1.6] - 2026-02-13
+### Added
+- Twist-kort feature med triggerpunkter (tur 3 og 6).
+- Blind mode hvor state skjules indtil afslutning.
+- Speed rounds med valgfrit max-turns loft.
+- Nyt modul: `core/twist_cards.py`.
+
+### Changed
+- Prompten inkluderer nu aktivt twist-kort i personaens kontekst.
 
 ## [v1.5] - 2026-02-13
 ### Added
