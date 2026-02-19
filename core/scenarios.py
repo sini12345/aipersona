@@ -92,6 +92,50 @@ SCENARIOS = {
             "initial_state": {"trust": 16, "stress": 86, "shame": 58, "hope": 22, "control_loss": 84},
         },
     ],
+    "Bent": [
+        {
+            "label": "Første hjemmebesøg",
+            "context": "Du besøger Bent i hans lejlighed for første gang som ny kontaktperson fra hjemmeplejen.",
+            "backstory": (
+                "Bent har haft tre forskellige kontaktpersoner det sidste år. "
+                "Han har ryddet op og sat kaffe over, men åbner halvt i døren og siger 'Jeg passer mig selv'."
+            ),
+            "today_goal": "Skab en respektfuld kontakt uden at overtage. Lad Bent definere rammerne.",
+            "risk_triggers": "Overdreven omsorgstale, spørgsmål om alkohol tidligt, at se sig om i hjemmet uden lov.",
+            "hidden_layer": "Bent er ensom men oplever ethvert tilbud om hjælp som et angreb på hans mandsidentitet.",
+            "initial_state": {"trust": 26, "stress": 60, "shame": 48, "hope": 36, "control_loss": 68},
+        },
+        {
+            "label": "Samtale om alkohol",
+            "context": "Bent har selv nævnt at han 'drikker lidt for meget' på det seneste. Du har fået mulighed for at tale med ham.",
+            "backstory": (
+                "Bents datter ringede bekymret til kommunen for to uger siden. "
+                "Det ved Bent. Han er vred over det, men har alligevel åbnet for samtalen."
+            ),
+            "today_goal": "Undersøg Bents egen oplevelse af sit alkoholforbrug uden at moralisere eller presse.",
+            "risk_triggers": (
+                "Bruge ord som 'alkoholiker', 'misbrug' eller 'du skal'. "
+                "Referere til datterens bekymring som legitimering."
+            ),
+            "hidden_layer": "Bent ved godt at det er gået for vidt, men at indrømme det føles som kapitulation.",
+            "initial_state": {"trust": 30, "stress": 65, "shame": 60, "hope": 30, "control_loss": 65},
+        },
+        {
+            "label": "Datter har ringet til kommunen",
+            "context": "Bent har fundet ud af at hans datter har ringet til kommunen med bekymringer. Han er vred og føler sig forrådt.",
+            "backstory": (
+                "Forholdet til datteren er ambivalent — kærlighed og stolthed blandet med en følelse af ikke at slå til som far. "
+                "Bents kone døde for seks år siden, og datteren er det eneste tætte familiemedlem."
+            ),
+            "today_goal": "Deeskaler vreden, anerkend krænkelsen og bevar relationen til Bent.",
+            "risk_triggers": (
+                "Forsvare datterens beslutning, bagatellisere hans vrede, "
+                "bruge situationen til at tale om hans alkoholforbrug."
+            ),
+            "hidden_layer": "Bent er dybt såret over at være 'rapporteret'. Han oplever det som bevis på at han er holdt op med at være familiefar.",
+            "initial_state": {"trust": 18, "stress": 78, "shame": 66, "hope": 24, "control_loss": 76},
+        },
+    ],
 }
 
 

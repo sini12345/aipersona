@@ -16,6 +16,7 @@ PERSONA_FILES = {
     "Ali": "personas/ali.md",
     "Sofie": "personas/sofie.md",
     "Mika": "personas/mika.md",
+    "Bent": "personas/bent.md",
 }
 
 LEARNING_GOALS = [
@@ -205,7 +206,9 @@ def chat_turn(user_text: str, session: dict, chat_history: list):
                 ai_text += block.text
 
         session["turns"].append({"role": "assistant", "content": ai_text})
-        updated = update_state_from_turn(current_state, user_text, ai_text, session["learning_goal"])
+        updated = update_state_from_turn(
+            current_state, user_text, ai_text, session["learning_goal"], session["persona_name"]
+        )
 
         session["turn_count"] = session.get("turn_count", 0) + 1
         turn_number = session["turn_count"]
@@ -291,8 +294,8 @@ def end_session(session: dict):
 
 
 def build_ui():
-    with gr.Blocks(title="Persona Trainer v1.6") as demo:
-        gr.Markdown("# Persona Trainer v1.6 (Gradio + Anthropic)")
+    with gr.Blocks(title="Persona Trainer v2.0") as demo:
+        gr.Markdown("# Persona Trainer v2.0 (Gradio + Anthropic)")
         with gr.Accordion("Hjælp til valg", open=False):
             gr.Markdown(
                 """
