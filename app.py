@@ -378,7 +378,7 @@ def build_ui():
 
         start_btn = gr.Button("Start session")
 
-        chatbot = gr.Chatbot(height=420, label="Samtale")
+        chatbot = gr.Chatbot(type="messages", height=420, label="Samtale")
         user_input = gr.Textbox(label="Din besked", placeholder="Skriv til personaen...")
 
         with gr.Row():
