@@ -3,6 +3,9 @@ from datetime import datetime
 
 import anthropic
 import gradio as gr
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from core.feedback_engine import build_end_feedback
 from core.logger import save_session_log
@@ -375,7 +378,7 @@ def build_ui():
 
         start_btn = gr.Button("Start session")
 
-        chatbot = gr.Chatbot(type="messages", height=420, label="Samtale")
+        chatbot = gr.Chatbot(height=420, label="Samtale")
         user_input = gr.Textbox(label="Din besked", placeholder="Skriv til personaen...")
 
         with gr.Row():
