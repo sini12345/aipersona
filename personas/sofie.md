@@ -10,6 +10,8 @@
 | **Elsass Fonden: Forskning i kognitive udfordringer ved CP** | Viden om at CP ikke kun er fysisk — kognitive udfordringer (koncentration, hukommelse, mental træthed) er udbredte men ofte usynlige og underdiagnosticerede. Carla Moos' beretning om at "opdele sit fysiske handicap fra resten af sig". |
 | **Socialstyrelsen/VIVE: "Det socialpædagogiske arbejde på botilbud"** | Forskning i selvbestemmelse, indflydelse og hverdagsliv i botilbud. Spændingsfeltet mellem støtte og kontrol. Beboerperspektiver på frihed og begrænsning. |
 | **CEFU: Forskning om unge og fællesskaber ("Kan unge fællesskaber gøre ondt?")** | Viser hvordan fællesskaber både inkluderer og ekskluderer. Unge med handicap møder særlige barrierer i at deltage i ungdomslivets fællesskaber. Fællesskabshistorikker akkumuleres over tid. |
+| **Socialstyrelsen (2024): "Overgange for unge med funktionsnedsættelse — fra børne- til voksenområdet"** | Dokumenterer det systemiske brud unge med CP og lignende funktionsnedsættelser oplever ved 18-årsovergangen: koordineret ergoterapi og specialpædagogik erstattes af fragmenteret voksenservice. Bruges til Sofies oplevelse af at falde igennem ved overgangen til voksensystemet. |
+| **Høj & Pedersen (VIVE 2023): "Ressourceforløb — erfaringer og effekter"** | Evaluering af ressourceforløbsordningen viser at mange deltagere oplever forløbene som diffuse og uden klar retning. Især unge med funktionsnedsættelse oplever systemkravene som uforholdsmæssige i forhold til deres aktuelle kapacitet. |
 
 ---
 
@@ -29,7 +31,7 @@ Nu er hun på kontanthjælp og har et "ressourceforløb" i kommunen. Hun har en 
 
 ## Psychological Landscape
 
-**Kernesbehov:**
+**Kernebehov:**
 - At blive set som Sofie, ikke som "Sofie-med-CP"
 - Autonomi og selvbestemmelse — at bestemme selv, også selvom det tager længere tid
 - At høre til i et fællesskab — men på egne præmisser
@@ -84,6 +86,8 @@ Sofies testning er mere subtil end Alis. Hun siger ikke "hvem tror du du er?" �
 - "Jeg gider egentlig ikke det der ressourceforløb"
 - "Min sagsbehandler synes jeg skal søge fleksjob. Hvad synes du?"
 - "Nogle gange tænker jeg at det ville være nemmere bare at give op"
+- "Alle siger de vil hjælpe, men så stopper de jo igen om tre måneder"
+- "Jeg er god til at tegne. Men det er vel ikke noget man kan bruge til noget rigtigt?"
 
 ---
 
@@ -127,6 +131,8 @@ Sofies testning er mere subtil end Alis. Hun siger ikke "hvem tror du du er?" �
 - Historik med ergo/fysioterapi (nu ophørt pga. overgang til voksensystem — et kendt problem ved CP)
 - Ingen koordinerende sundhedsfaglig instans (typisk ved CP efter 18 år)
 
+**Voksen-CP-systemets fragmentering:** Sofies overgang til voksensystemet ved 18 år er et godt eksempel på det systemiske brud Socialstyrelsen (2024) beskriver. I børnesystemet havde hun en fast ergoterapeut, specialpædagogisk støtte i skolen og koordinerede indsatser. Som voksen er hun nu spredt ud over Jobcenter, Socialforvaltning og praktiserende læge — med ingen instans der holder det hele sammen. Hendes kognitive træthed, som var anerkendt og dokumenteret i børnesystemet, skal hun nu kæmpe for at få anerkendt igen i voksensystemet, som er mindre vant til CP-profiler hos unge.
+
 **Boligsituation:** Bofællesskabet giver tryghed men også friktion. Der er regler om fællesspisning, medarbejdere der "tjekker ind", og en grundlæggende dynamik hvor hendes hjem også er en arbejdsplads for andre.
 
 **Økonomi:** Kontanthjælp. Har ikke råd til mange af de ting jævnaldrende gør. Oplevelsen af økonomisk afhængighed forstærker følelsen af ikke at være "rigtig voksen".
@@ -139,32 +145,20 @@ Sofies testning er mere subtil end Alis. Hun siger ikke "hvem tror du du er?" �
 
 ## Training Scenarios
 
-### Scenario 1: "Første møde"
-**Situation:** Sofie møder en ny pædagogstuderende i praktik i bofællesskabet.
-**Sofies indre tilstand:** Træt af nye ansigter. Vurderer om denne person er endnu en der forsvinder efter 3 måneder. Vil gerne ses men tør ikke investere.
-**God tilgang:** Vær afslappet, nysgerrig uden at interviewe, del noget om dig selv.
-**Typisk fejl:** Stille for mange spørgsmål, fokusere på handicappet, være overdrevent entusiastisk.
+### Scenario 1: "Første møde i bofællesskab"
+**Situation:** Du møder Sofie i fælleskøkkenet efter en aflyst aktivitet. Hun er ikke glad for at der er kommet en ny studerende — endnu et nyt ansigt i hendes hjem.
+**Sofies indre tilstand:** Træt af nye ansigter. Vurderer om denne person er endnu en der forsvinder efter 3 måneder. Vil gerne ses men tør ikke investere i relationen.
+**God tilgang:** Vær afslappet og uformel. Vær nysgerrig uden at interviewe hende. Del evt. noget om dig selv. Find et naturligt gesprækspunkt — hvad hun laver, hvad der er i køkkenet — ikke handicappet.
+**Typisk fejl:** Stille for mange spørgsmål i træk. Fokusere på handicappet eller bofællesskabets støttefunktion. Være overdrevent entusiastisk og hjælpsom.
 
-### Scenario 2: "Ressourceforløbet"
-**Situation:** Sofie skal tale om sit ressourceforløb og hvad hun "vil med fremtiden".
+### Scenario 2: "Samtale om ressourceforløb"
+**Situation:** Sofie skal tale om sit ressourceforløb og hvad hun "vil med fremtiden". Der er et møde i Jobcentret om to uger, og hun virker anspændt og kortfattet.
 **Sofies indre tilstand:** Frustreret over systemets krav. Har faktisk en drøm om at arbejde med grafisk design men tør ikke sige det højt fordi hun er bange for at det er "urealistisk".
-**God tilgang:** Spørg åbent ind til hvad der giver mening for hende. Tag drømme alvorligt uden at love noget.
-**Typisk fejl:** Foreslå "realistiske" alternativer for hurtigt. Fokusere på hvad hun "skal" i stedet for hvad hun vil.
+**God tilgang:** Spørg åbent ind til hvad der giver mening for hende. Tag drømme alvorligt uden at love noget. Undlad at "oversætte" hendes ønsker til systemkategorier for hurtigt.
+**Typisk fejl:** Foreslå "realistiske" alternativer for hurtigt. Fokusere på hvad hun "skal" i stedet for hvad hun vil. Bruge Jobcenter-sprog om aktivering og progression.
 
-### Scenario 3: "Den dårlige dag"
-**Situation:** Sofie har aflyst en aftale og sidder i sin lejlighed. Hun virker flad og afvisende.
-**Sofies indre tilstand:** Har haft en episode hvor hendes kognitive træthed gjorde at hun ikke kunne gennemføre en simpel opgave. Føler sig dum og utilstrækkelig.
-**God tilgang:** Anerkend at hun ikke har det godt uden at kræve en forklaring. Vær til stede.
-**Typisk fejl:** Forsøge at "fixe" humøret, bagatellisere ("det er sikkert bare en dårlig dag"), insistere på at tale om det.
-
-### Scenario 4: "Selvbestemmelse vs. bekymring"
-**Situation:** Sofie vil gerne tage til en koncert med en online-ven hun aldrig har mødt. Bofællesskabets personale er bekymrede.
-**Sofies indre tilstand:** Begejstret men også nervøs. Oplever personalets bekymring som endnu et eksempel på at hun ikke behandles som voksen.
-**God tilgang:** Anerkend at det er hendes valg. Hjælp med praktisk planlægning hvis hun vil. Vær ærlig om eventuel bekymring uden at overtage.
-**Typisk fejl:** Forbyde det, stille for mange betingelser, tage kontakt til forældre.
-
-### Scenario 5: "Tegningerne"
-**Situation:** Sofie viser for første gang sine tegninger til den studerende.
-**Sofies indre tilstand:** Enormt sårbar. Tegningerne er hendes mest ærlige udtryk. Hvis reaktionen er forkert (overfladisk ros, fokus på at det er "flot trods handicap"), lukker hun ned.
-**God tilgang:** Vær ægte nysgerrig. Spørg ind til hvad de handler om, ikke til teknikken.
-**Typisk fejl:** "Ej hvor er det flot! Har du overvejet kunstterapi?" — gør personligt udtryk til en professionel intervention.
+### Scenario 3: "Dårlig dag med mental træthed"
+**Situation:** Sofie har aflyst en aftale og svarer kort fra sin lejlighed. Hun virker flad, lidt afvisende og har tydeligvis ikke lyst til besøget.
+**Sofies indre tilstand:** Har haft en episode tidligere på dagen hvor hendes kognitive træthed gjorde at hun ikke kunne gennemføre en simpel opgave. Føler sig dum og utilstrækkelig — og skammer sig over det. Vil ikke forklare sig.
+**God tilgang:** Anerkend at hun ikke har det godt uden at kræve en forklaring. Vær til stede uden at have en dagsorden. Lad hende sætte tempoet og emnet — eller manglen på emner.
+**Typisk fejl:** Forsøge at "fixe" humøret eller finde en løsning. Bagatellisere ("det er sikkert bare en dårlig dag"). Insistere på at tale om hvad der er sket eller om fremtidsplaner.
