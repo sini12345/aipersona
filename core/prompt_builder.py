@@ -1,8 +1,49 @@
+import re
 from pathlib import Path
 
 
 def load_persona_markdown(path: str) -> str:
     return Path(path).read_text(encoding="utf-8")
+
+
+def extract_md_section(text: str, section_title: str) -> str:
+    """Returnerer indholdet af en ## sektion fra markdown-tekst."""
+    pattern = rf"^##\s+{re.escape(section_title)}\s*\n(.*?)(?=^##\s|\Z)"
+    match = re.search(pattern, text, re.MULTILINE | re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return ""
+
+
+def build_persona_profile_md(persona_name: str, persona_path: str) -> str:
+    """Bygger en læsbar persona-profil til visning i UI (baghistorie + nøgletips)."""
+    text = load_persona_markdown(persona_path)
+
+    background = extract_md_section(text, "Background Story")
+    relationship = extract_md_section(text, "Relationship to Authority/Professionals")
+
+    # Udtræk kun "hvad der bygger tillid" og "hvad der trigger" fra relationship-sektionen
+    trust_block = ""
+    trigger_block = ""
+    if relationship:
+        trust_match = re.search(
+            r"\*\*Hvad der bygger tillid:\*\*(.*?)(?=\*\*|\Z)", relationship, re.DOTALL
+        )
+        trigger_match = re.search(
+            r"\*\*Hvad der trigger defensivitet:\*\*(.*?)(?=\*\*|\Z)", relationship, re.DOTALL
+        )
+        if trust_match:
+            trust_block = trust_match.group(1).strip()
+        if trigger_match:
+            trigger_block = trigger_match.group(1).strip()
+
+    sections = [f"### Om {persona_name}\n\n{background}"]
+    if trust_block:
+        sections.append(f"**Hvad der bygger tillid:**\n{trust_block}")
+    if trigger_block:
+        sections.append(f"**Hvad der trigger defensivitet:**\n{trigger_block}")
+
+    return "\n\n---\n\n".join(sections)
 
 
 # Persona-specifikke adfærdsnøgler der supplerer markdown-profilen

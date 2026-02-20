@@ -9,7 +9,7 @@ load_dotenv()
 
 from core.feedback_engine import build_end_feedback
 from core.logger import save_session_log
-from core.prompt_builder import build_system_prompt, load_persona_markdown
+from core.prompt_builder import build_persona_profile_md, build_system_prompt, load_persona_markdown
 from core.scenarios import format_scenario_brief, get_scenario, get_scenario_labels
 from core.state_engine import PersonaState, update_state_from_turn
 from core.twist_cards import TWIST_TRIGGER_TURNS, get_twist_card
@@ -65,12 +65,20 @@ def _round_status(session: dict) -> str:
     return f"Speed round: {turn_count}/{max_turns} ture"
 
 
+def _persona_profile_md(persona_name: str) -> str:
+    path = PERSONA_FILES.get(persona_name, "")
+    if not path:
+        return ""
+    return build_persona_profile_md(persona_name, path)
+
+
 def refresh_scenarios(persona_name: str):
     labels = get_scenario_labels(persona_name)
     selected = labels[0] if labels else ""
     scenario = get_scenario(persona_name, selected)
     brief = format_scenario_brief(persona_name, scenario)
-    return gr.Dropdown(choices=labels, value=selected), brief
+    profile = _persona_profile_md(persona_name)
+    return gr.Dropdown(choices=labels, value=selected), brief, profile
 
 
 def refresh_scenario_brief(persona_name: str, scenario_label: str):
@@ -371,6 +379,9 @@ def build_ui():
                 info="Gælder kun når speed round er slået til.",
             )
 
+        with gr.Accordion("Om denne persona (baggrund og nøgletips)", open=False):
+            persona_profile = gr.Markdown(value=_persona_profile_md("Ali"))
+
         scenario_brief = gr.Markdown(
             value=format_scenario_brief("Ali", get_scenario("Ali", _default_scenario_label("Ali")))
         )
@@ -410,7 +421,7 @@ def build_ui():
         persona.change(
             fn=refresh_scenarios,
             inputs=[persona],
-            outputs=[scenario, scenario_brief],
+            outputs=[scenario, scenario_brief, persona_profile],
         )
 
         scenario.change(
