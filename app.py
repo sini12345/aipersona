@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from core.export import generate_html_report
 from core.feedback_engine import build_end_feedback
 from core.logger import save_session_log
 from core.prompt_builder import build_persona_profile_md, build_system_prompt, load_persona_markdown
@@ -304,6 +305,13 @@ def end_session(session: dict):
     return feedback, status, final_state_text, _round_status(session)
 
 
+def download_report(session: dict, feedback_text: str):
+    if not session or not session.get("turns"):
+        return None
+    path = generate_html_report(session, feedback_text)
+    return path
+
+
 def build_ui():
     with gr.Blocks(title="Persona Trainer v2.0") as demo:
         gr.Markdown("# Persona Trainer v2.0 (Gradio + Anthropic)")
@@ -401,6 +409,14 @@ def build_ui():
         state_panel = gr.Textbox(label="Persona-tilstand", lines=6, interactive=False)
         feedback = gr.Textbox(label="Slutfeedback", lines=10, interactive=False)
 
+        with gr.Row():
+            download_btn = gr.Button("Download rapport (HTML)", variant="secondary")
+        report_file = gr.File(
+            label="Rapport klar til download — åbn i browser og print til PDF",
+            interactive=False,
+            visible=False,
+        )
+
         session_state = gr.State(value={})
 
         start_btn.click(
@@ -446,6 +462,16 @@ def build_ui():
             fn=end_session,
             inputs=[session_state],
             outputs=[feedback, status, state_panel, round_status],
+        )
+
+        download_btn.click(
+            fn=download_report,
+            inputs=[session_state, feedback],
+            outputs=[report_file],
+        ).then(
+            fn=lambda path: gr.File(visible=path is not None),
+            inputs=[report_file],
+            outputs=[report_file],
         )
 
     return demo
