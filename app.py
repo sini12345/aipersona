@@ -1,5 +1,5 @@
 ﻿import os
-from datetime import datetime
+from datetime import UTC, datetime
 
 import anthropic
 import gradio as gr
@@ -23,6 +23,8 @@ LEARNING_GOALS = [
     "Deeskalering",
     "Grænsesætning",
 ]
+
+MODEL = "claude-sonnet-4-5-20250929"
 
 
 def _build_client() -> anthropic.Anthropic:
@@ -100,7 +102,7 @@ def start_session(
     brief = format_scenario_brief(persona_name, scenario)
 
     session = {
-        "id": datetime.utcnow().strftime("%Y%m%d_%H%M%S"),
+        "id": datetime.now(UTC).strftime("%Y%m%d_%H%M%S"),
         "persona_name": persona_name,
         "scenario_label": selected_label,
         "scenario_brief": brief,
@@ -110,7 +112,7 @@ def start_session(
         "persona_text": persona_text,
         "turns": [],
         "state_history": [state.to_dict()],
-        "started_at": datetime.utcnow().isoformat(),
+        "started_at": datetime.now(UTC).isoformat(),
         "twist_enabled": bool(twist_enabled),
         "blind_mode": bool(blind_mode),
         "speed_round_enabled": bool(speed_round_enabled),
@@ -193,7 +195,7 @@ def chat_turn(user_text: str, session: dict, chat_history: list):
 
     try:
         response = client.messages.create(
-            model="claude-sonnet-4-5-20250929",
+            model=MODEL,
             max_tokens=500,
             system=system_prompt,
             messages=_messages_for_api(session["turns"]),
@@ -264,7 +266,7 @@ def end_session(session: dict):
     if not session:
         return "Ingen aktiv session.", "", "", "Ingen aktiv session."
 
-    session["ended_at"] = datetime.utcnow().isoformat()
+    session["ended_at"] = datetime.now(UTC).isoformat()
     path = save_session_log(session)
 
     feedback = build_end_feedback(

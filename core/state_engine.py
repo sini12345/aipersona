@@ -39,31 +39,85 @@ class PersonaState:
         )
 
 
+def _count_matches(text: str, words: list[str]) -> int:
+    return sum(1 for w in words if w in text)
+
+
 def update_state_from_turn(state: PersonaState, user_text: str, ai_text: str, learning_goal: str) -> PersonaState:
     s = PersonaState.from_dict(state.to_dict())
     text = user_text.lower()
 
-    validating_words = ["forstår", "giver mening", "hører", "tak", "valgmulighed", "hvad tænker du"]
-    pressure_words = ["skal", "burde", "konsekvens", "sanktion", "nu gør du"]
+    # --- Validating language (builds trust, reduces stress) ---
+    validating_words = [
+        "forstår", "giver mening", "hører dig", "tak", "valgmulighed",
+        "hvad tænker du", "fortæl mig", "det lyder", "jeg kan godt se",
+        "det er okay", "i dit tempo", "du bestemmer", "hvad vil du",
+        "hvordan oplever du", "det giver mening",
+    ]
+    val_hits = _count_matches(text, validating_words)
+    if val_hits:
+        boost = min(val_hits, 3)  # cap at 3 to avoid runaway gains
+        s.trust += 3 * boost
+        s.hope += 2 * boost
+        s.stress -= 2 * boost
+        s.shame -= 1 * boost
+        s.control_loss -= 2 * boost
 
-    if any(w in text for w in validating_words):
-        s.trust += 4
+    # --- Pressure language (erodes trust, raises stress/shame) ---
+    pressure_words = [
+        "skal", "burde", "konsekvens", "sanktion", "nu gør du",
+        "du må ikke", "det duer ikke", "tag dig sammen", "det er din skyld",
+        "hvorfor gjorde du", "det var forkert", "du skulle have",
+    ]
+    press_hits = _count_matches(text, pressure_words)
+    if press_hits:
+        penalty = min(press_hits, 3)
+        s.trust -= 4 * penalty
+        s.stress += 4 * penalty
+        s.shame += 3 * penalty
+        s.hope -= 2 * penalty
+        s.control_loss += 3 * penalty
+
+    # --- Curiosity / open questions (builds hope and trust) ---
+    curiosity_words = [
+        "hvad synes du", "kan du fortælle", "hvordan har du det",
+        "hvad er vigtigt", "hvad drømmer du", "hvad kunne hjælpe",
+    ]
+    if any(w in text for w in curiosity_words):
         s.hope += 3
-        s.stress -= 3
-        s.control_loss -= 3
-
-    if any(w in text for w in pressure_words):
-        s.trust -= 5
-        s.stress += 5
-        s.shame += 3
-        s.control_loss += 4
-
-    if learning_goal == "Deeskalering" and "rolig" in text:
-        s.stress -= 2
         s.trust += 2
+        s.shame -= 2
 
-    if learning_goal == "Grænsesætning" and "ramme" in text:
-        s.control_loss -= 2
+    # --- Normalising language (reduces shame) ---
+    normalising_words = [
+        "det er helt normalt", "mange oplever", "det kan ske for alle",
+        "der er ingen der dømmer", "det er forståeligt",
+    ]
+    if any(w in text for w in normalising_words):
+        s.shame -= 4
+        s.hope += 2
+        s.stress -= 1
+
+    # --- Learning-goal-specific bonuses ---
+    if learning_goal == "Deeskalering":
+        calming = ["rolig", "ro på", "lad os tage den langsomt", "trække vejret", "pause"]
+        if any(w in text for w in calming):
+            s.stress -= 3
+            s.trust += 2
+            s.control_loss -= 2
+
+    if learning_goal == "Grænsesætning":
+        framing = ["ramme", "aftale", "grænse", "vi aftaler", "tydeligt"]
+        if any(w in text for w in framing):
+            s.control_loss -= 3
+            s.trust += 1
+
+    if learning_goal == "Alliance":
+        alliance = ["sammen", "vi to", "fælles", "med dig", "ved din side"]
+        if any(w in text for w in alliance):
+            s.trust += 3
+            s.hope += 2
+            s.stress -= 1
 
     # Difficulty shifts baseline resistance.
     s.stress += max(0, s.difficulty - 2)
