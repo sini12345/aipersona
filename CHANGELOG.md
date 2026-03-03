@@ -3,6 +3,11 @@
 ## [Unreleased]
 - Planlagt: Persona-specifikke svaerhedsprofiler.
 - Planlagt: Mikro-feedback hver 3.-4. tur.
+- Added: Ali persona udvidet til fuld research-baseret profil i `personas/ali.md`.
+- Added: Ny system-prompt version for Ali i `personas/ali_system_prompt.md`.
+- Added: Ny system-prompt version for Sofie i `personas/sofie_system_prompt.md`.
+- Added: Ny system-prompt version for Mika i `personas/mika_system_prompt.md`.
+- Changed: App-routing bruger nu system-prompt filer for alle personaer.
 
 ## [v1.6] - 2026-02-13
 ### Added

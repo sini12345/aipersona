@@ -23,5 +23,13 @@ def get_twist_card(persona_name: str, turn_number: int) -> str:
     cards = TWIST_CARDS.get(persona_name, [])
     if not cards:
         return "Ingen twist-kort tilgaengelige."
-    index = (turn_number // 3) % len(cards)
+
+    trigger_index = 0
+    for idx, trigger_turn in enumerate(TWIST_TRIGGER_TURNS):
+        if turn_number >= trigger_turn:
+            trigger_index = idx
+        else:
+            break
+
+    index = trigger_index % len(cards)
     return cards[index]

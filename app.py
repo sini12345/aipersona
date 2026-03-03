@@ -1,5 +1,6 @@
 ﻿import os
 from datetime import datetime
+from pathlib import Path
 
 import anthropic
 import gradio as gr
@@ -12,11 +13,16 @@ from core.state_engine import PersonaState, update_state_from_turn
 from core.twist_cards import TWIST_TRIGGER_TURNS, get_twist_card
 
 
-PERSONA_FILES = {
-    "Ali": "personas/ali.md",
-    "Sofie": "personas/sofie.md",
-    "Mika": "personas/mika.md",
-}
+def _load_persona_files() -> dict[str, str]:
+    persona_files: dict[str, str] = {}
+    for path in sorted(Path("personas").glob("*_system_prompt.md")):
+        name = path.stem.replace("_system_prompt", "").split("_")[0].capitalize()
+        persona_files[name] = path.as_posix()
+    return persona_files
+
+
+PERSONA_FILES = _load_persona_files()
+DEFAULT_PERSONA = "Ali" if "Ali" in PERSONA_FILES else (next(iter(PERSONA_FILES), ""))
 
 LEARNING_GOALS = [
     "Alliance",
@@ -85,9 +91,12 @@ def start_session(
     speed_round_enabled: bool,
     speed_round_max_turns: int,
 ):
-    persona_text = load_persona_markdown(PERSONA_FILES[persona_name])
-    selected_label = scenario_label or _default_scenario_label(persona_name)
-    scenario = get_scenario(persona_name, selected_label)
+    if not PERSONA_FILES:
+        raise ValueError("Ingen persona-filer fundet i ./personas")
+    selected_persona = persona_name if persona_name in PERSONA_FILES else DEFAULT_PERSONA
+    persona_text = load_persona_markdown(PERSONA_FILES[selected_persona])
+    selected_label = scenario_label or _default_scenario_label(selected_persona)
+    scenario = get_scenario(selected_persona, selected_label)
 
     state = PersonaState()
     state.difficulty = difficulty
@@ -97,14 +106,15 @@ def start_session(
             setattr(state, key, value)
     state.clamp()
 
-    brief = format_scenario_brief(persona_name, scenario)
+    brief = format_scenario_brief(selected_persona, scenario)
 
     session = {
         "id": datetime.utcnow().strftime("%Y%m%d_%H%M%S"),
-        "persona_name": persona_name,
+        "persona_name": selected_persona,
         "scenario_label": selected_label,
         "scenario_brief": brief,
         "scenario_hidden_layer": scenario.get("hidden_layer", ""),
+        "scenario_state_modifiers": scenario.get("state_modifiers", {}),
         "learning_goal": learning_goal,
         "difficulty": difficulty,
         "persona_text": persona_text,
@@ -123,7 +133,7 @@ def start_session(
 
     status = (
         "Session startet | "
-        f"Persona: {persona_name} | "
+        f"Persona: {selected_persona} | "
         f"Scenarie: {selected_label} | "
         f"Læringsmål: {learning_goal} | "
         f"Sværhedsgrad: {difficulty}"
@@ -205,7 +215,13 @@ def chat_turn(user_text: str, session: dict, chat_history: list):
                 ai_text += block.text
 
         session["turns"].append({"role": "assistant", "content": ai_text})
-        updated = update_state_from_turn(current_state, user_text, ai_text, session["learning_goal"])
+        updated = update_state_from_turn(
+            current_state,
+            user_text,
+            ai_text,
+            session["learning_goal"],
+            scenario_modifiers=session.get("scenario_state_modifiers", {}),
+        )
 
         session["turn_count"] = session.get("turn_count", 0) + 1
         turn_number = session["turn_count"]
@@ -315,13 +331,13 @@ def build_ui():
         with gr.Row():
             persona = gr.Dropdown(
                 choices=list(PERSONA_FILES.keys()),
-                value="Ali",
+                value=DEFAULT_PERSONA,
                 label="Persona",
                 info="Vælg hvilken karakter du vil træne med.",
             )
             scenario = gr.Dropdown(
-                choices=get_scenario_labels("Ali"),
-                value=_default_scenario_label("Ali"),
+                choices=get_scenario_labels(DEFAULT_PERSONA),
+                value=_default_scenario_label(DEFAULT_PERSONA),
                 label="Scenarie",
                 info="Vælg den konkrete situation for samtalen.",
             )
@@ -366,7 +382,7 @@ def build_ui():
             )
 
         scenario_brief = gr.Markdown(
-            value=format_scenario_brief("Ali", get_scenario("Ali", _default_scenario_label("Ali")))
+            value=format_scenario_brief(DEFAULT_PERSONA, get_scenario(DEFAULT_PERSONA, _default_scenario_label(DEFAULT_PERSONA)))
         )
         twist_panel = gr.Markdown(value="Twist: Ingen aktiv twist endnu.")
 

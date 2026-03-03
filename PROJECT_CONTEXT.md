@@ -26,6 +26,7 @@ Bygge en AI-baseret traeningsprototype til socialpaedagogiske 1:1 samtaler med e
 - Scenario-baseret state-init.
 - Samtalelogging til `data/logs/*.json`.
 - Bugfix: Scenario Brief opdaterer nu ved scenarieskift i dropdown.
+- Persona-routing standardiseret: appen bruger nu system-prompt filer for alle tre (`personas/ali_system_prompt.md`, `personas/sofie_system_prompt.md`, `personas/mika_system_prompt.md`).
 
 ## Core Files
 - `app.py` - UI, sessionflow, API-kald.
