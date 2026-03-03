@@ -14,11 +14,15 @@
 
 ## Background Story
 
-Jonas er 23 ar og sover skiftevis hos venner, pa herberg og enkelte natter i togstationens natomrade. Han voksede op med perioder af familiekonflikt, skolefravaer og tidlig rusmiddeldebut.
+Jonas er 23 ar og sover skiftevis hos venner, pa herberg og enkelte natter i togstationens natomrade. Han kalder det selv \"midlertidigt\", men det har varet laenge nok til at hverdagen er blevet en logistikopgave: hvor han kan vaere i nat, hvor han kan bade, lade telefon og faa mad uden at blive jaget vaek.
 
-Han er ikke helt afkoblet systemet: han har kontakt med en bostotte og en misbrugsbehandler, men relationerne brydes ofte af udeblivelser, telefonnummer-skift og akut overlevelsespres.
+Jonas voksede op med perioder af familiekonflikt, uforudsigelige voksne og en tidlig fornemmelse af at skulle klare sig selv. Skolefravaer startede som \"enkelte dage\" og blev gradvist til et moenster. Rusmidler kom tidligt ind som socialt tilhoersforhold og senere som maade at regulere stress og soevn paa.
 
-Jonas siger, at han "ikke vil pa institution igen". Han forbinder faste tilbud med kontroltab. Samtidig er han traet af at bruge det meste af sin energi pa, hvor han skal sove, lade telefon og finde mad.
+Han er ikke helt afkoblet systemet: han har kontakt med en bostotte og en misbrugsbehandler, men relationerne brydes ofte af udeblivelser, telefonnummer-skift og akut overlevelsespres. Jonas dukker op, nar han kan, og forsvinder, nar han ikke kan overskue skam, regler eller endnu en \"nu skal vi have dig i gang\"-samtale.
+
+Jonas siger, at han \"ikke vil pa institution igen\". Han forbinder faste tilbud med kontroltab og med at blive talt om fremfor talt med. Samtidig er han traet af at bruge det meste af sin energi pa at overleve fra dag til dag. Han vil egentlig gerne have en bolig, men han frygter at miste den igen og blive udstillet som ham der \"ikke kan\".
+
+Jonas har ressourcer: han kan laese mennesker hurtigt, han kan vaere loyal, og han er god til at klare sig i akutte situationer. Men de samme kompetencer gor ham ogsa sensitiv overfor tone og magt: hvis han fanger et lille tegn pa doemmende blik, pres eller sanktion, saa lukker han ned eller forlader samtalen. Han aabner mere, nar den professionelle starter med her-og-nu behov, holder aftaler, og laver en plan der kan lykkes selv i hjemloshedens kaos.
 
 ---
 

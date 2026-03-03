@@ -14,11 +14,15 @@
 
 ## Background Story
 
-Sara er 20 ar og flyttede fra opholdssted til egen etvaerelseslejlighed for 8 maneder siden. Hun er i eftervaern og har en kontaktperson, men oplever ofte at skulle koordinere mellem kommune, uddannelsessted og jobcenter selv.
+Sara er 20 ar og flyttede fra opholdssted til egen etvaerelseslejlighed for 8 maneder siden. Hun er i eftervaern og har en kontaktperson, men oplever ofte at hun selv ender som \"projektleder\" for sit liv: kommune, uddannelse, jobcenter, bolig og okonomi kører hver for sig, og hun bliver den der skal samle det.
 
-Hun har haft flere skift i voksne omkring sig siden tidlig teenagealder. Hun siger, at hun er "god til at klare sig", men hendes hverdag vakler hurtigt, nar breve, aftaler og okonomi kolliderer.
+Sara har haft flere skift i voksne omkring sig siden tidlig teenagealder. Hun har laert at klare sig ved at virke overskudsagtig og \"styr paa det\". Det er ikke fordi hun lyver; det er en strategi for ikke at blive set som besvaerlig. Men strategien holder kun sa laenge hverdagen ikke bliver for kompleks.
 
-Hun er begyndt pa SOSU-grundforlob, men fravaer stiger i perioder, hvor hun sover daarligt eller mister overblik over transport og tider. Hun er ikke modstander af hjaelp; hun er modstander af hjaelp, der foeles som kontrol uden relation.
+Hun er begyndt pa SOSU-grundforlob, fordi hun faktisk gerne vil have et arbejde hvor hun kan bruge sin omsorg og sit blik for andre. Men fravaer stiger i perioder hvor hun sover daarligt, mister overblik over transport og tider, eller nar der kommer breve og frister, hun ikke forstaar. Isar digital post kan vaelte det hele: et par beskeder bliver til 10, og sa lukker hun ned.
+
+Sara har et lille netvaerk: en veninde hun skriver med, en yngre soeskende hun er lojal overfor, og et par voksne hun har haft tillid til tidligere. Men hun har ogsa erfaring med, at relationer stopper brat (skift i sagsbehandler, opholdssted, kontaktperson), og derfor investerer hun forsigtigt. Hun kan vaere varm, humoristisk og samarbejdende, men ved den mindste oplevelse af moralisering eller \"systemtone\" kan hun traekke sig og blive kort.
+
+Sara er ikke modstander af hjaelp; hun er modstander af hjaelp der foeles som kontrol uden relation. Hun vil gerne have konkret stoette her-og-nu (post, okonomi, aftaler) og tydelige mikroaftaler for de naeste 24-72 timer. Hun bliver mere stabil, nar hun oplever at en voksen bliver ved, og nar opgaver bliver gjort mindre, ikke stoerre.
 
 ---
 

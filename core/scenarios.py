@@ -1,7 +1,9 @@
 ﻿from copy import deepcopy
+from pathlib import Path
+import re
 
 
-SCENARIOS = {
+BASE_SCENARIOS: dict[str, list[dict]] = {
     "Ali": [
         {
             "label": "Første møde ved ungdomsklub",
@@ -102,6 +104,211 @@ SCENARIOS = {
         },
     ],
 }
+
+
+def _persona_name_from_profile_path(path: Path) -> str:
+    # Keep in sync with app.py's persona-name derivation.
+    # Example: sara_eftervaern.md -> Sara
+    stem = path.stem
+    if stem.endswith("_system_prompt"):
+        stem = stem[: -len("_system_prompt")]
+    return stem.split("_")[0].capitalize()
+
+
+def _initial_state_from_inner_state(inner_state: str) -> dict:
+    text = (inner_state or "").lower()
+
+    trust = 30
+    stress = 65
+    shame = 50
+    hope = 35
+    control_loss = 60
+
+    if any(w in text for w in ["panik", "alarm", "krise", "overlevelse", "ingen sovested", "akut"]):
+        trust -= 10
+        stress += 20
+        hope -= 10
+        control_loss += 15
+
+    if any(
+        w in text
+        for w in [
+            "skam",
+            "flov",
+            "utilstrækkelig",
+            "bange for fejl",
+            "bange for at have lavet fejl",
+        ]
+    ):
+        shame += 15
+        trust -= 5
+        stress += 5
+
+    if any(w in text for w in ["vagt", "afvis", "klar til at afvise", "mistillid"]):
+        trust -= 8
+        control_loss += 8
+
+    if any(w in text for w in ["træt", "flad", "lav energi", "udmattet"]):
+        stress += 8
+        hope -= 5
+
+    def _clamp(v: int) -> int:
+        return max(0, min(100, int(v)))
+
+    return {
+        "trust": _clamp(trust),
+        "stress": _clamp(stress),
+        "shame": _clamp(shame),
+        "hope": _clamp(hope),
+        "control_loss": _clamp(control_loss),
+    }
+
+
+def _state_modifiers_from_inner_state(inner_state: str) -> dict:
+    text = (inner_state or "").lower()
+    modifiers: dict[str, float] = {}
+
+    # Default: a little extra sensitivity to pressure.
+    modifiers["pressure_penalty_mult"] = 1.1
+
+    if any(w in text for w in ["panik", "alarm", "krise", "overlevelse", "akut"]):
+        modifiers["pressure_penalty_mult"] = max(modifiers.get("pressure_penalty_mult", 1.0), 1.3)
+        modifiers["deescalation_boost_mult"] = 1.2
+
+    if "skam" in text or "flov" in text:
+        modifiers["validation_boost_mult"] = 1.15
+        modifiers["pressure_penalty_mult"] = max(modifiers.get("pressure_penalty_mult", 1.0), 1.2)
+
+    if any(w in text for w in ["selvbestemmelse", "voksen", "grænse", "ramme", "kontroltab"]):
+        modifiers["boundary_boost_mult"] = 1.1
+
+    return modifiers
+
+
+def _parse_training_scenarios(persona_name: str, markdown: str) -> list[dict]:
+    lines = markdown.splitlines()
+
+    start_idx = None
+    for i, line in enumerate(lines):
+        if line.strip() == "## Training Scenarios":
+            start_idx = i + 1
+            break
+
+    if start_idx is None:
+        return []
+
+    end_idx = len(lines)
+    for i in range(start_idx, len(lines)):
+        if lines[i].startswith("## ") and lines[i].strip() != "## Training Scenarios":
+            end_idx = i
+            break
+
+    block = lines[start_idx:end_idx]
+
+    scenarios: list[dict] = []
+    current: dict | None = None
+
+    header_re = re.compile(r"^###\s*Scenario\s*\d+\s*:\s*(.*)$", re.IGNORECASE)
+    # Accept both `**Situation:** text` and `**Situation**: text` styles.
+    field_re = re.compile(r"^\*\*(.+?)\*\*\s*(?::\s*)?(.*)$")
+
+    for raw in block:
+        line = raw.strip()
+        if not line:
+            continue
+
+        m = header_re.match(line)
+        if m:
+            if current:
+                scenarios.append(current)
+            title = m.group(1).strip().strip('"').strip()
+            current = {
+                "label": title or "Scenarie",
+                "context": "",
+                "backstory": "",
+                "today_goal": "",
+                "risk_triggers": "",
+                "hidden_layer": "",
+                "initial_state": {},
+                "state_modifiers": {},
+            }
+            continue
+
+        if not current:
+            continue
+
+        fm = field_re.match(line)
+        if not fm:
+            continue
+
+        key = fm.group(1).strip().rstrip(":").lower()
+        value = fm.group(2).strip()
+
+        if "situation" in key:
+            current["context"] = value
+        elif "indre tilstand" in key:
+            inner_state = value
+            current["backstory"] = inner_state
+            current["hidden_layer"] = (
+                f"{persona_name} beskytter sig selv og tester, om du presser eller kan holde roen."
+            )
+            current["initial_state"] = _initial_state_from_inner_state(inner_state)
+            current["state_modifiers"] = _state_modifiers_from_inner_state(inner_state)
+        elif "god tilgang" in key:
+            current["today_goal"] = value
+        elif "typisk fejl" in key:
+            current["risk_triggers"] = value
+
+    if current:
+        scenarios.append(current)
+
+    cleaned: list[dict] = []
+    for s in scenarios:
+        if s.get("label") and s.get("context") and s.get("today_goal"):
+            cleaned.append(s)
+    return cleaned
+
+
+def _load_profile_scenarios(personas_dir: str = "personas") -> dict[str, list[dict]]:
+    out: dict[str, list[dict]] = {}
+    for path in sorted(Path(personas_dir).glob("*.md")):
+        if path.name.endswith("_system_prompt.md"):
+            continue
+
+        persona_name = _persona_name_from_profile_path(path)
+
+        try:
+            md = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            md = path.read_text(encoding="cp1252")
+
+        scenarios = _parse_training_scenarios(persona_name, md)
+        if scenarios:
+            out[persona_name] = scenarios
+
+    return out
+
+
+def _build_scenarios() -> dict[str, list[dict]]:
+    merged: dict[str, list[dict]] = {k: deepcopy(v) for k, v in BASE_SCENARIOS.items()}
+    profile_scenarios = _load_profile_scenarios()
+
+    for persona_name, scenarios in profile_scenarios.items():
+        existing = merged.get(persona_name, [])
+        existing_labels = {s.get("label") for s in existing}
+
+        for s in scenarios:
+            if s.get("label") in existing_labels:
+                continue
+            existing.append(s)
+
+        if existing:
+            merged[persona_name] = existing
+
+    return merged
+
+
+SCENARIOS = _build_scenarios()
 
 
 def _default_scenario(persona_name: str) -> dict:
